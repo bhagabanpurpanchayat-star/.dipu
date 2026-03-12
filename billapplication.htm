@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Bill Payment Request – Exact Format</title>
+  <title>Bill Payment Request – Single Select · Work Order Mandatory</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
@@ -222,7 +221,7 @@
       overflow-y: auto;
     }
     
-    /* EXACT LETTER STYLE */
+    /* EXACT LETTER STYLE – also used for print */
     .letter {
       background: white;
       color: #333;
@@ -266,7 +265,6 @@
     .ref-label {
       font-weight: bold;
     }
-    /* second line third cell left empty – automatically nothing */
     
     .scheme-details {
       margin-top: 30px;
@@ -327,28 +325,21 @@
       justify-content: center;
     }
     
-    .badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    
-    .badge.unpaid {
-      background: var(--danger);
-      color: white;
-    }
-    
-    .badge.paid {
-      background: var(--secondary);
-      color: white;
-    }
+    /* badge removed (EMD status hidden) */
     
     @media print {
-      body { background: #fff; }
-      .card > *:not(.preview-area) { display: none; }
-      .preview-area { display: block; }
-      .letter { box-shadow: none; padding: 20px; }
+      body { background: white; margin: 0; padding: 0; }
+      .card > *:not(.preview-area) { display: none !important; }
+      .preview-area { display: block !important; margin: 0; padding: 0; }
+      .letter { box-shadow: none; padding: 0.5in; max-width: 100%; border-radius: 0; }
+      .print-buttons, .card-header button, .card-header i, .card-header h2 { display: none !important; }
+      /* ensure A4 portrait – browser will handle if set in print dialog */
+    }
+    
+    /* page size hint */
+    @page {
+      size: A4 portrait;
+      margin: 1.5cm;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -357,7 +348,7 @@
   <div class="container">
     <div class="card">
       <header>
-        <h1><i class="fas fa-file-invoice"></i> Bill Payment Request – Exact Format</h1>
+        <h1><i class="fas fa-file-invoice"></i> Bill Payment – Single NIT (WO mandatory)</h1>
         <div class="stats">
           <div class="stat-box">
             <div class="stat-value" id="totalSelected">0</div>
@@ -404,7 +395,7 @@
       </div>
 
       <div class="note">
-        <i class="fas fa-info-circle"></i> Unpaid entries shown. Select one or more items.
+        <i class="fas fa-info-circle"></i> Showing entries with <strong>Work Order No not blank</strong>. Select only one item.
         <span id="rowCount" style="float: right;"></span>
       </div>
 
@@ -414,11 +405,12 @@
             <tr>
               <th style="width: 50px"><input type="checkbox" id="selectAll"/></th>
               <th>UNIQUE NIT</th><th>NIT</th><th>SL</th><th>NIT DATE</th><th>Activity ID</th>
-              <th>Name of Work</th><th>EMD (₹)</th><th>Status</th><th>Work Order No</th><th>WO Date</th>
+              <th>Name of Work</th><th>Work Order No</th><th>WO Date</th>
+              <!-- EMD and Status columns removed -->
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="11" class="empty-state">Select a vendor</td></tr>
+            <tr><td colspan="9" class="empty-state">Select a vendor</td></tr>
           </tbody>
         </table>
       </div>
@@ -426,16 +418,16 @@
       <div class="controls">
         <button id="generateBtn"><i class="fas fa-file-pdf"></i> Generate Letter</button>
         <button id="clearBtn" class="ghost"><i class="fas fa-times"></i> Clear Selection</button>
-        <button id="markPaidBtn" class="secondary" style="margin-left: auto;"><i class="fas fa-check"></i> Mark EMD Paid</button>
+        <!-- "Mark EMD Paid" removed as per requirement (EMD column hidden) -->
       </div>
 
       <!-- Preview Area -->
       <div class="preview-area" id="previewArea" style="display:none">
         <div class="card-header">
-          <h2><i class="fas fa-eye"></i> Letter Preview (exact format)</h2>
+          <h2><i class="fas fa-eye"></i> Letter Preview (A4 · portrait)</h2>
           <div class="print-buttons">
-            <button id="printBtn"><i class="fas fa-print"></i> Print / PDF</button>
-            <button id="exportDocBtn"><i class="fas fa-file-word"></i> Export as .doc</button>
+            <button id="printBtn"><i class="fas fa-print"></i> Print (A4)</button>
+            <button id="exportDocBtn"><i class="fas fa-file-word"></i> Export .doc</button>
             <button id="editBtn" class="ghost"><i class="fas fa-edit"></i> Back</button>
           </div>
         </div>
@@ -448,8 +440,9 @@
     // CONFIG – replace with your actual Apps Script URL
     const scriptURL = "https://script.google.com/macros/s/AKfycbxW9wMmgG2gwnIKtBchjN1GrdasILb-77A_4NeH5ApW0mZQpSazUca2BY11vt606UB3EQ/exec";
     
-    let tableData = [];
-    let selectedIndices = new Set();
+    let fullTableData = [];      // all rows from server (original indices)
+    let filteredRows = [];       // rows with non-blank work order (and unpaid? keeping original logic, but we removed status column; we still only show "unpaid"? for consistency we keep status filtering but column hidden)
+    let selectedIndices = new Set(); // stores indices in filteredRows array
     let allVendors = [];
 
     const $ = id => document.getElementById(id);
@@ -488,44 +481,52 @@
         showStatus(`Loaded ${allVendors.length} vendors`);
       } catch (e) {
         console.error(e);
-        $('vendorSelect').innerHTML = '<option value="">Error</option>';
+        $('vendorSelect').innerHTML = '<option value="">Error loading</option>';
         showStatus(e.message, false);
       }
     }
 
-    // Load vendor data
+    // Load vendor data and filter: (1) unpaid (status[10] unpaid/empty) AND (2) Work Order No (col 15) not blank
     async function loadVendorData(vendor) {
       if (!vendor) { clearTable(); return; }
-      $('tableBody').innerHTML = `<tr><td colspan="11" class="empty-state"><div class="loading"></div> Loading...</td></tr>`;
+      $('tableBody').innerHTML = `<tr><td colspan="9" class="empty-state"><div class="loading"></div> Loading...</td></tr>`;
       try {
         let resp = await fetch(scriptURL + `?action=getEarnestMoneyData&vendor=${encodeURIComponent(vendor)}`);
         let result = await resp.json();
         if (result.error) throw new Error(result.message);
-        tableData = result.data || [];
-        let unpaid = tableData.filter(r => r[10]?.toLowerCase() === 'unpaid' || !r[10]);
-        if (unpaid.length === 0) {
-          $('tableBody').innerHTML = `<tr><td colspan="11" class="empty-state">No unpaid entries</td></tr>`;
+        fullTableData = result.data || [];
+        
+        // Filter: unpaid (status col 10 == 'unpaid' or missing) AND Work Order No (col 15) present and not blank
+        filteredRows = fullTableData.filter(row => {
+          let status = (row[10] || '').toLowerCase();
+          let unpaid = (status === 'unpaid' || status === '' || status === null);
+          let workOrder = row[15];  // column 15 = Work Order No
+          let hasWorkOrder = workOrder && workOrder.toString().trim() !== '';
+          return unpaid && hasWorkOrder;
+        });
+
+        if (filteredRows.length === 0) {
+          $('tableBody').innerHTML = `<tr><td colspan="9" class="empty-state">No unpaid entries with Work Order</td></tr>`;
           selectedIndices.clear(); updateTotals(); return;
         }
-        renderRows(unpaid);
-        $('rowCount').innerText = `Unpaid: ${unpaid.length}`;
-        showStatus(`Loaded ${unpaid.length} entries`);
+        renderRows(filteredRows);
+        $('rowCount').innerText = `Eligible: ${filteredRows.length}`;
+        showStatus(`Loaded ${filteredRows.length} entries (unpaid + work order present)`);
       } catch (e) {
-        $('tableBody').innerHTML = `<tr><td colspan="11" class="empty-state">Error</td></tr>`;
+        $('tableBody').innerHTML = `<tr><td colspan="9" class="empty-state">Error</td></tr>`;
         showStatus(e.message, false);
       }
     }
 
     function renderRows(rows) {
       let html = '';
-      selectedIndices.clear();
+      selectedIndices.clear(); // fresh start
       rows.forEach((r, idx) => {
+        // idx is the index in filteredRows
         html += `<tr>
           <td><div class="checkbox-container"><input type="checkbox" data-idx="${idx}"></div></td>
           <td>${r[2] || ''}</td><td>${r[3] || ''}</td><td>${r[4] || ''}</td>
           <td>${formatDate(r[5])}</td><td>${r[6] || ''}</td><td>${r[7] || ''}</td>
-          <td style="text-align:right;">₹ ${Number(r[9]||0).toLocaleString('en-IN')}</td>
-          <td><span class="badge unpaid">${r[10] || 'Unpaid'}</span></td>
           <td>${r[15] || ''}</td><td>${formatDate(r[16])}</td>
         </tr>`;
       });
@@ -538,73 +539,88 @@
       document.querySelectorAll('#sheetTable tbody input[type="checkbox"]').forEach(cb => {
         cb.addEventListener('change', e => {
           let idx = Number(e.target.dataset.idx);
-          if (e.target.checked) selectedIndices.add(idx);
-          else selectedIndices.delete(idx);
+          if (e.target.checked) {
+            // enforce single selection: clear all others
+            if (selectedIndices.size > 0) {
+              // uncheck previously checked boxes
+              document.querySelectorAll('#sheetTable tbody input[type="checkbox"]').forEach(c => {
+                if (c !== e.target) c.checked = false;
+              });
+              selectedIndices.clear();
+            }
+            selectedIndices.add(idx);
+          } else {
+            selectedIndices.delete(idx);
+          }
           updateTotals();
         });
       });
+      
       $('selectAll').onchange = function() {
+        // In single-select mode, selectAll behaves as "select first" or clear
+        // We'll implement: if any checked -> uncheck all; else check the first row (if exists)
         let cbs = document.querySelectorAll('#sheetTable tbody input[type="checkbox"]');
-        cbs.forEach(cb => {
-          cb.checked = this.checked;
-          let idx = Number(cb.dataset.idx);
-          if (this.checked) selectedIndices.add(idx); else selectedIndices.delete(idx);
-        });
+        if (this.checked) {
+          // clear any previous selection, then select the first
+          cbs.forEach(cb => cb.checked = false);
+          selectedIndices.clear();
+          if (cbs.length > 0) {
+            cbs[0].checked = true;
+            selectedIndices.add(0);
+          }
+        } else {
+          cbs.forEach(cb => cb.checked = false);
+          selectedIndices.clear();
+        }
         updateTotals();
       };
     }
 
     function updateTotals() {
       $('totalSelected').innerText = selectedIndices.size;
+      // manage selectAll state: if only one row selected and total rows > 0? selectAll shouldn't be checked
       let totalCheck = document.querySelectorAll('#sheetTable tbody input[type="checkbox"]').length;
-      let checked = document.querySelectorAll('#sheetTable tbody input[type="checkbox"]:checked').length;
-      $('selectAll').checked = (totalCheck > 0 && totalCheck === checked);
+      let checkedCount = selectedIndices.size;
+      $('selectAll').checked = (totalCheck > 0 && checkedCount === totalCheck); // but with single-select this will rarely happen; fine.
     }
 
     function clearTable() {
-      $('tableBody').innerHTML = `<tr><td colspan="11" class="empty-state">Select vendor</td></tr>`;
+      $('tableBody').innerHTML = `<tr><td colspan="9" class="empty-state">Select vendor</td></tr>`;
       selectedIndices.clear();
       $('rowCount').innerText = '';
       updateTotals();
     }
 
-    // GENERATE LETTER – EXACT FORMAT with two-line reference using grid
+    // GENERATE LETTER – using filteredRows and selected single index
     function generateLetter() {
       if (selectedIndices.size === 0) {
-        alert('Please select at least one item');
+        alert('Please select one item');
         return;
       }
+      // get the selected row (single)
+      let idx = Array.from(selectedIndices)[0];
+      let row = filteredRows[idx];
+      if (!row) return;
 
-      // Gather selected rows
-      let selectedRows = [];
-      selectedIndices.forEach(idx => {
-        if (tableData[idx]) selectedRows.push(tableData[idx]);
-      });
+      // Reference values
+      let nitNo = row[3] || '';
+      let nitDate = formatDate(row[5]) || '';
+      let slNo = row[4] || '';
+      let woNo = row[15] || '';
+      let woDate = formatDate(row[16]) || '';
 
-      // Use first row for reference values
-      let first = selectedRows[0];
-      let nitNo = first[3] || '';
-      let nitDate = formatDate(first[5]) || '';
-      let slNo = first[4] || '';
-      let woNo = first[15] || '';
-      let woDate = formatDate(first[16]) || '';
-
-      // Other fields
       let firm = $('firmName').value || $('vendorSelect').value;
       let place = $('place').value;
       let letterDate = formatDate($('letterDate').value || todayISO());
       let fallbackSource = $('sourceFund').value || '';
 
-      // Build scheme details rows (Activity ID, Scheme Name, Source of Fund)
-      let schemeRows = '';
-      selectedRows.forEach(row => {
-        let activityId = row[6] || '';
-        let schemeName = row[7] || '';
-        let source = (row[14] && row[14].trim() !== '') ? row[14] : fallbackSource;
-        schemeRows += `<tr><td>${activityId}</td><td>${schemeName}</td><td>${source}</td></tr>`;
-      });
+      // Scheme details – only one row in table
+      let activityId = row[6] || '';
+      let schemeName = row[7] || '';
+      let source = (row[14] && row[14].trim() !== '') ? row[14] : fallbackSource;
+      let schemeRows = `<tr><td>${activityId}</td><td>${schemeName}</td><td>${source}</td></tr>`;
 
-      // Build reference block using CSS Grid – two rows, three columns.
+      // Reference block
       const refBlock = `
         <div class="ref-grid">
           <div class="ref-item"><span class="ref-label">NIT No.-</span> ${nitNo}</div>
@@ -612,7 +628,7 @@
           <div class="ref-item"><span class="ref-label">Sl No-</span> ${slNo}</div>
           <div class="ref-item"><span class="ref-label">Work Order No-</span> ${woNo}</div>
           <div class="ref-item"><span class="ref-label">WO Date-</span> ${woDate}</div>
-          <div class="ref-item"></div> <!-- empty third column -->
+          <div class="ref-item"></div>
         </div>
       `;
 
@@ -661,60 +677,28 @@
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    // Mark as paid
-    async function markAsPaid() {
-      if (selectedIndices.size === 0) return alert('Select items');
-      if (!confirm(`Mark ${selectedIndices.size} as paid?`)) return;
-      try {
-        await fetch(scriptURL, {
-          method: 'POST', mode: 'no-cors',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            action: 'updatePaymentStatus',
-            rowIndices: Array.from(selectedIndices).join(','),
-            vendor: $('vendorSelect').value,
-            paymentStatus: 'Paid',
-            paymentDate: todayISO()
-          })
-        });
-        showStatus('Marked as paid, refreshing...');
-        setTimeout(() => loadVendorData($('vendorSelect').value), 1000);
-      } catch (e) {
-        showStatus(e.message, false);
-      }
-    }
-
-    // Export as .doc (for Google Docs / Word)
+    // Export .doc
     function exportAsDoc() {
       const letterDiv = $('letterContainer').querySelector('.letter');
-      if (!letterDiv) {
-        alert('Generate the letter first.');
-        return;
-      }
+      if (!letterDiv) { alert('Generate the letter first.'); return; }
 
-      // Clone the letter to avoid modifying the displayed one
-      const letterClone = letterDiv.cloneNode(true);
-      // Remove any inline buttons or unwanted elements (none expected, but safe)
-      
-      // Create a full HTML document with styling for export
-      const styles = document.querySelector('style').innerHTML; // get main styles
+      const styles = document.querySelector('style').innerHTML;
       const docHtml = `
         <html>
         <head>
           <meta charset="utf-8">
           <style>
             ${styles}
-            /* ensure letter has no shadow and fills page */
             .letter { box-shadow: none; margin: 0 auto; padding: 40px; max-width: 1000px; }
+            @page { size: A4 portrait; margin: 1.5cm; }
           </style>
         </head>
         <body style="background: white; margin: 0; padding: 20px;">
-          ${letterClone.outerHTML}
+          ${letterDiv.outerHTML}
         </body>
         </html>
       `;
 
-      // Create blob and trigger download
       const blob = new Blob([docHtml], { type: 'application/msword' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -742,9 +726,12 @@
       $('selectAll').checked = false;
       updateTotals();
     });
-    $('markPaidBtn').addEventListener('click', markAsPaid);
+    // "Mark EMD Paid" button removed
+
     document.addEventListener('click', e => {
-      if (e.target.id === 'printBtn') window.print();
+      if (e.target.id === 'printBtn') {
+        window.print();   // uses @page A4 portrait; prints only preview area due to print styles
+      }
       if (e.target.id === 'editBtn') $('previewArea').style.display = 'none';
       if (e.target.id === 'exportDocBtn') exportAsDoc();
     });
@@ -755,4 +742,3 @@
   </script>
 </body>
 </html>
-```

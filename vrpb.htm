@@ -3,299 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VRP Working Certificate · VBDC (VST) · Bhagabanpur GP</title>
+    <title>VRP · VBDC (VST) · Bhagabanpur GP (auto‑rolling 12 months)</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-        }
-        body {
-            background: #ddeef7;
-            margin: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .card {
-            max-width: 1300px;
-            width: 100%;
-            background: white;
-            border-radius: 38px;
-            padding: 28px 32px;
-            box-shadow: 0 30px 50px -20px #1f5668;
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #0e5368;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin: 0 0 5px;
-        }
-        .badge {
-            background: #b0d9eb;
-            padding: 5px 20px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        /* two‑column input panel */
-        .input-panel {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 25px;
-            background: #eff8fe;
-            border-radius: 50px;
-            padding: 28px 30px;
-            margin: 20px 0 15px;
-            border: 1px solid #bdd9ec;
-        }
-        .col {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .control-group {
-            background: white;
-            border-radius: 28px;
-            padding: 16px 22px;
-            border: 1px solid #c4deee;
-            box-shadow: 0 4px 10px #c7ddec;
-        }
-        .control-group label {
-            font-weight: 700;
-            color: #195f74;
-            display: block;
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-        .month-check-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 12px;
-            max-height: 230px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        .month-check-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #ecf7fe;
-            padding: 5px 15px 5px 10px;
-            border-radius: 40px;
-            border: 1px solid #a5cde2;
-            font-size: 0.95rem;
-        }
-        .month-check-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #1d7f9c;
-        }
-        .month-check-item input[type="number"] {
-            width: 58px;
-            padding: 5px 6px;
-            border-radius: 30px;
-            border: 1px solid #85bcd9;
-            text-align: center;
-            font-weight: 600;
-            margin-left: 4px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-        .btn {
-            background: white;
-            border: 1px solid #97c3db;
-            padding: 10px 22px;
-            border-radius: 40px;
-            font-weight: 600;
-            color: #145f76;
-            cursor: pointer;
-            transition: 0.1s;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 6px #c5deec;
-        }
-        .btn-primary, .generate-btn {
-            background: #1f7188;
-            border-color: #0c546b;
-            color: white;
-            box-shadow: 0 8px 14px -8px #2d7f99;
-        }
-        .btn-primary:hover, .generate-btn:hover {
-            background: #115f77;
-        }
-        .btn:hover {
-            background: #dff1fb;
-        }
-        .person-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 18px;
-            max-height: 230px;
-            overflow-y: auto;
-            padding: 5px 0;
-        }
-        .person-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #e3f2fb;
-            padding: 6px 18px 6px 12px;
-            border-radius: 40px;
-            border: 1px solid #96c3dd;
-        }
-        .person-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #147a96;
-        }
-        .error-message {
-            color: #b33c3c;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-left: 8px;
-        }
-        .generate-row {
-            grid-column: span 2;
-            display: flex;
-            justify-content: center;
-            margin: 10px 0 5px;
-        }
-        .big-generate {
-            background: #0f627a;
-            border: none;
-            padding: 16px 45px;
-            font-size: 1.3rem;
-            border-radius: 60px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: white;
-            box-shadow: 0 12px 20px -10px #0a5268;
-            cursor: pointer;
-            transition: 0.15s;
-            border: 1px solid #a2d2ea;
-        }
-        .big-generate:hover {
-            background: #0b4f64;
-            transform: scale(1.02);
-        }
-        .preview-block {
-            border: 3px dashed #479bb9;
-            border-radius: 32px;
-            padding: 8px;
-            background: #f9feff;
-            margin: 20px 0 10px;
-        }
-        .certificate {
-            background: white;
-            padding: 30px 35px;
-            border-radius: 24px;
-            font-family: 'Times New Roman', Times, serif;
-            border: 1px solid #b7d9ee;
-        }
-        .office {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            font-family: 'Times New Roman', serif;
-            color: #12333f;
-        }
-        .address {
-            text-align: center;
-            border-bottom: 1px solid #497e91;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-        }
-        .date-line {
-            text-align: right;
-            font-size: 1.1rem;
-            font-family: 'Times New Roman', serif;
-            margin: 15px 0 10px;
-        }
-        .subject {
-            font-weight: 700;
-            text-decoration: underline;
-            margin: 20px 0 8px;
-            font-size: 1.2rem;
-        }
-        .intro {
-            font-family: 'Times New Roman', serif;
-            font-size: 1.05rem;
-            text-align: justify;
-            margin: 12px 0 20px;
-        }
-        .vrp-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #2a6c81;
-            margin: 20px 0;
-            font-family: 'Times New Roman', serif;
-        }
-        .vrp-table th {
-            background: #d2eaf3;
-            border: 1px solid #3a778e;
-            padding: 9px;
-            font-size: 1.05rem;
-            text-align: center;
-            vertical-align: middle;
-        }
-        .vrp-table td {
-            border: 1px solid #48869e;
-            padding: 8px 12px;
-        }
-        .signature {
-            margin-top: 35px;
-            font-family: 'Times New Roman', serif;
-            font-size: 1.1rem;
-        }
-        .footer-note {
-            color: #366f80;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .print-export {
-            display: flex;
-            gap: 18px;
-        }
-        /* special style for the supervisor note in first row */
-        .supervisor-tag {
-            font-weight: 500;
-        }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        body { background: #ddeef7; margin: 20px; display: flex; justify-content: center; }
+        .card { max-width: 1300px; width: 100%; background: white; border-radius: 38px; padding: 28px 32px; box-shadow: 0 30px 50px -20px #1f5668; }
+        h1 { font-size: 2rem; font-weight: 600; color: #0e5368; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 5px; }
+        .badge { background: #b0d9eb; padding: 5px 20px; border-radius: 40px; font-size: 0.9rem; font-weight: 500; }
+        .input-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 25px; background: #eff8fe; border-radius: 50px; padding: 28px 30px; margin: 20px 0 15px; border: 1px solid #bdd9ec; }
+        .col { display: flex; flex-direction: column; gap: 18px; }
+        .control-group { background: white; border-radius: 28px; padding: 16px 22px; border: 1px solid #c4deee; box-shadow: 0 4px 10px #c7ddec; }
+        .control-group label { font-weight: 700; color: #195f74; display: block; margin-bottom: 12px; font-size: 1rem; }
+        .month-check-grid { display: flex; flex-wrap: wrap; gap: 10px 12px; max-height: 230px; overflow-y: auto; padding-right: 5px; }
+        .month-check-item { display: flex; align-items: center; gap: 5px; background: #ecf7fe; padding: 5px 15px 5px 10px; border-radius: 40px; border: 1px solid #a5cde2; font-size: 0.95rem; }
+        .month-check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1d7f9c; }
+        .month-check-item input[type="number"] { width: 68px; padding: 5px 6px; border-radius: 30px; border: 1px solid #85bcd9; text-align: center; font-weight: 600; margin-left: 4px; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+        .btn { background: white; border: 1px solid #97c3db; padding: 10px 22px; border-radius: 40px; font-weight: 600; color: #145f76; cursor: pointer; transition: 0.1s; font-size: 0.9rem; box-shadow: 0 2px 6px #c5deec; }
+        .btn-primary, .generate-btn { background: #1f7188; border-color: #0c546b; color: white; box-shadow: 0 8px 14px -8px #2d7f99; }
+        .btn-primary:hover, .generate-btn:hover { background: #115f77; }
+        .btn:hover { background: #dff1fb; }
+        .person-grid { display: flex; flex-wrap: wrap; gap: 12px 18px; max-height: 230px; overflow-y: auto; padding: 5px 0; }
+        .person-item { display: flex; align-items: center; gap: 8px; background: #e3f2fb; padding: 6px 18px 6px 12px; border-radius: 40px; border: 1px solid #96c3dd; }
+        .person-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #147a96; }
+        .error-message { color: #b33c3c; font-weight: 600; font-size: 0.9rem; margin-left: 8px; }
+        .generate-row { grid-column: span 2; display: flex; justify-content: center; margin: 10px 0 5px; }
+        .big-generate { background: #0f627a; border: none; padding: 16px 45px; font-size: 1.3rem; border-radius: 60px; font-weight: 700; letter-spacing: 1px; color: white; box-shadow: 0 12px 20px -10px #0a5268; cursor: pointer; transition: 0.15s; border: 1px solid #a2d2ea; }
+        .big-generate:hover { background: #0b4f64; transform: scale(1.02); }
+        .preview-block { border: 3px dashed #479bb9; border-radius: 32px; padding: 8px; background: #f9feff; margin: 20px 0 10px; }
+        .certificate { background: white; padding: 30px 35px; border-radius: 24px; font-family: 'Times New Roman', Times, serif; border: 1px solid #b7d9ee; }
+        .office { text-align: center; font-size: 2rem; font-weight: 700; font-family: 'Times New Roman', serif; color: #12333f; }
+        .address { text-align: center; border-bottom: 1px solid #497e91; padding-bottom: 12px; margin-bottom: 20px; }
+        .date-line { text-align: right; font-size: 1.1rem; font-family: 'Times New Roman', serif; margin: 15px 0 10px; }
+        .subject { font-weight: 700; text-decoration: underline; margin: 20px 0 8px; font-size: 1.2rem; }
+        .intro { font-family: 'Times New Roman', serif; font-size: 1.05rem; text-align: justify; margin: 12px 0 20px; }
+        .vrp-table { width: 100%; border-collapse: collapse; border: 1px solid #2a6c81; margin: 20px 0; font-family: 'Times New Roman', serif; }
+        .vrp-table th { background: #d2eaf3; border: 1px solid #3a778e; padding: 9px; font-size: 1.05rem; text-align: center; vertical-align: middle; }
+        .vrp-table td { border: 1px solid #48869e; padding: 8px 12px; }
+        .signature { margin-top: 35px; font-family: 'Times New Roman', serif; font-size: 1.1rem; }
+        .footer-note { color: #366f80; margin-top: 10px; display: flex; justify-content: space-between; }
+        .print-export { display: flex; gap: 18px; }
+        .supervisor-tag { font-weight: 500; }
+        .dynamic-hint { background: #dcf0fa; padding: 6px 16px; border-radius: 40px; font-size:0.9rem; display:inline-block; margin-bottom:8px; }
     </style>
 </head>
 <body>
 <div class="card" id="app">
-    <h1>🏛️ Bhagabanpur Gram Panchayat <span class="badge">VRP (VST) · exactly as image</span></h1>
+    <h1>🏛️ Bhagabanpur Gram Panchayat <span class="badge">VRP (VST) · auto‑rolling months</span></h1>
 
-    <!-- TWO COLUMN INPUT (months left, VRP list right) -->
+    <!-- rolling months hint (always 12 past months, no manual year edit) -->
+    <div class="dynamic-hint" v-if="eligibleMonthsList.length">
+        🗓️ Today: {{ today }} — last 12 months (auto, no manual update): from {{ eligibleMonthsList[0].display }} to {{ eligibleMonthsList[eligibleMonthsList.length-1].display }}
+    </div>
+
+    <!-- TWO COLUMN INPUT -->
     <div class="input-panel">
         <!-- LEFT COLUMN: months + days -->
         <div class="col">
             <div class="control-group">
-                <label>📅 1. Select month & set working days</label>
+                <label>📅 1. Select month(s) & set working days (past 12 months)</label>
                 <div class="month-check-grid">
-                    <div v-for="(m, idx) in months" :key="idx" class="month-check-item">
-                        <input type="checkbox" :value="m" :id="'c_'+m" v-model="selectedMonths">
-                        <label :for="'c_'+m" style="margin:0;">{{ m }}</label>
-                        <input type="number" v-model.number="daysPerMonth[m]" min="1" max="31" 
-                               placeholder="days" v-if="selectedMonths.includes(m)">
+                    <div v-for="(m, idx) in eligibleMonthsList" :key="idx" class="month-check-item">
+                        <input type="checkbox" :value="m.fullLabel" :id="'c_'+m.fullLabel" v-model="selectedMonths">
+                        <label :for="'c_'+m.fullLabel" style="margin:0;">{{ m.display }}</label>
+                        <input type="number" v-model.number="daysPerMonth[m.fullLabel]" min="1" max="31" 
+                               placeholder="days" v-if="selectedMonths.includes(m.fullLabel)">
                     </div>
+                    <div v-if="eligibleMonthsList.length === 0" style="padding:10px; color:#a33;">⚠️ No months available</div>
                 </div>
                 <div class="action-buttons" style="margin-top:12px;">
-                    <button class="btn" @click="selectAllMonths">All months</button>
+                    <button class="btn" @click="selectAllEligible">All 12 months</button>
                     <button class="btn" @click="deselectAllMonths">Clear</button>
                     <span class="error-message" v-if="selectedMonths.length === 0">⚠️ at least one</span>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: VRP list (exactly from image) with supervisor note -->
+        <!-- RIGHT COLUMN: VRP list (exactly from image) -->
         <div class="col">
             <div class="control-group">
                 <label>👥 2. Choose Village Resource Persons (VRP)</label>
@@ -313,13 +97,13 @@
             </div>
         </div>
 
-        <!-- GENERATE BUTTON spanning both columns -->
+        <!-- GENERATE BUTTON -->
         <div class="generate-row">
             <button class="big-generate" @click="generateCertificate">📄 VRP WORKING CERTIFICATE GENERATOR</button>
         </div>
     </div>
 
-    <!-- certificate preview (hidden until generate) -->
+    <!-- certificate preview -->
     <div class="preview-block" id="certificateContainer" v-show="showCertificate">
         <div class="certificate" id="certificateContent">
             <div class="office">Office of the</div>
@@ -328,42 +112,37 @@
             <div class="date-line">Date : {{ currentDate }}</div>
             <div class="to-line">To,</div>
             <div class="to-line" style="font-weight:600;">The B.D.O<br>Chanchal-I Dev. Block<br>Chanchal, Malda.</div>
-            <div class="subject">Sub:- Working Certificate For VBDC (VST)</div>   <!-- exactly as image -->
+            <div class="subject">Sub:- Working Certificate For VBDC (VST)</div>
             <div class="salutation">Sir,</div>
             <div class="intro">
                 The following VRPs belonging to Bhagabanpur Gram Panchayat completed the work of VBDC in all the areas under the Panchayat in 
-                <span v-if="selectedMonths.length">{{ formattedMonthList }}-2025</span> in a regular and efficient manner.
+                <span v-if="selectedMonths.length">{{ formattedMonthList }} </span> in a regular and efficient manner.
             </div>
 
-            <!-- VRP table with two possible header styles: if one month -> simple, if multi month -> merged but we keep classic image style: December-2025 appears in third col -->
-            <!-- We'll implement merged header when >1 month, but also handle single month cleanly -->
+            <!-- VRP table with dynamic month-year headers (auto‑detected) -->
             <table class="vrp-table">
                 <thead>
                     <tr v-if="selectedMonths.length === 1">
-                        <!-- exactly as image: three columns, third = month name + year -->
                         <th>SL NO</th>
                         <th>Name of V.R.P</th>
                         <th>Working Days Per Month</th>
                     </tr>
                     <tr v-else-if="selectedMonths.length > 1">
-                        <!-- merged header: Working Days Per Month spans multiple columns -->
                         <th rowspan="2">SL NO</th>
                         <th rowspan="2">Name of V.R.P</th>
                         <th :colspan="selectedMonths.length">Working Days Per Month</th>
                     </tr>
                     <tr v-if="selectedMonths.length > 1">
-                        <th v-for="month in selectedMonths" :key="month">{{ month }}-2025</th>
+                        <th v-for="month in selectedMonths" :key="month">{{ month }}</th>   <!-- month includes year, e.g. 'February-2026' -->
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(vrp, idx) in displayedVrpList" :key="idx">
                         <td>{{ idx+1 }}</td>
                         <td>{{ vrp.displayName || vrp.name }}</td>
-                        <!-- if single month: show days in single column -->
                         <template v-if="selectedMonths.length === 1">
                             <td>{{ daysPerMonth[selectedMonths[0]] || '—' }}</td>
                         </template>
-                        <!-- if multiple months: show days per month -->
                         <template v-else>
                             <td v-for="month in selectedMonths" :key="month">
                                 {{ daysPerMonth[month] !== undefined ? daysPerMonth[month] : '—' }}
@@ -385,7 +164,7 @@
         </div>
     </div>
 
-    <!-- print/export buttons, shown only when certificate visible -->
+    <!-- print/export buttons -->
     <div class="footer-note" v-show="showCertificate">
         <div class="print-export">
             <button class="btn" @click="openPrintPreview">🖨️ print preview</button>
@@ -399,10 +178,7 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 <script>
     (function() {
-        // months list
-        const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-        
-        // VRP list exactly as in the image (including "Munmun Ray (Das), supervisor" as special string)
+        // VRP list exactly as in the image (including "Munmun Ray (Das), supervisor")
         const vrpRaw = [
             { name: 'Munmun Ray (Das), supervisor' },
             { name: 'Md Sakil Alam' },
@@ -414,21 +190,44 @@
             { name: 'Raju Julfikar' }
         ];
 
+        // generate last 12 COMPLETED months (excluding current month) based on today's date
+        // returns array from most recent past month to oldest (12 items)
+        function generateLast12Months() {
+            const today = new Date();                       // e.g. 2026-03-13
+            let currentYear = today.getFullYear();
+            let currentMonth = today.getMonth();            // 0-11, 2 = March
+
+            const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const result = [];
+
+            // we go back starting from previous month (currentMonth-1) and collect 12 months
+            for (let i = 1; i <= 12; i++) {
+                // target month = currentMonth - i
+                let m = currentMonth - i;
+                let y = currentYear;
+                while (m < 0) {
+                    m += 12;
+                    y -= 1;
+                }
+                const monthName = monthNames[m];
+                const fullLabel = `${monthName}-${y}`;      // e.g. "February-2026"
+                const display = `${monthName} ${y}`;        // for screen
+                result.push({ fullLabel, display, year: y, monthIndex: m });
+            }
+            // result[0] = most recent past month, result[11] = oldest
+            return result;
+        }
+
         new Vue({
             el: '#app',
             data: {
-                months: monthNames,
-                selectedMonths: ['December'],    // default month
-                daysPerMonth: {
-                    'December': 30,     // image shows 30 days for all except first row? but we follow image: first row special, others 30.
-                    // but we also provide defaults:
-                    'January': 30, 'February': 28, 'March': 30, 'April': 30,
-                    'May': 30, 'June': 30, 'July': 30, 'August': 30,
-                    'September': 30, 'October': 30, 'November': 30
-                },
-                vrpList: vrpRaw.map(v => ({ name: v.name, displayName: v.name })), // use raw names
-                selectedVrps: vrpRaw.map(v => v.name),  // all selected by default
-                showCertificate: true                     // initially true for preview
+                selectedMonths: [],          // will be default = first eligible (most recent past month)
+                daysPerMonth: {},
+                vrpList: vrpRaw.map(v => ({ name: v.name, displayName: v.name })),
+                selectedVrps: vrpRaw.map(v => v.name),   // all selected by default
+                showCertificate: false,
+                today: '',
+                eligibleMonthsList: []        // automatically generated (always 12 months)
             },
             computed: {
                 displayedVrpList() {
@@ -443,21 +242,18 @@
                 }
             },
             methods: {
-                // month helpers
-                selectAllMonths() {
-                    this.selectedMonths = [...this.months];
+                selectAllEligible() {
+                    this.selectedMonths = this.eligibleMonthsList.map(e => e.fullLabel);
                 },
                 deselectAllMonths() {
                     this.selectedMonths = [];
                 },
-                // VRP helpers
                 selectAllVrps() {
                     this.selectedVrps = this.vrpList.map(v => v.name);
                 },
                 deselectAllVrps() {
                     this.selectedVrps = [];
                 },
-                // generate button action
                 generateCertificate() {
                     if (this.selectedMonths.length === 0) {
                         alert('Please select at least one month.');
@@ -469,10 +265,9 @@
                     }
                     this.showCertificate = true;
                 },
-                // print preview
                 openPrintPreview() {
                     if (!this.showCertificate || this.selectedMonths.length === 0 || this.displayedVrpList.length === 0) {
-                        alert('Generate certificate first and ensure month/VRP are selected.');
+                        alert('Generate certificate first.');
                         return;
                     }
                     const printWin = window.open('', '_blank');
@@ -491,15 +286,14 @@
                     `;
                     const contentElem = document.getElementById('certificateContent').cloneNode(true);
                     contentElem.removeAttribute('id');
-                    printWin.document.write(`<html><head><title>VRP VBDC (VST) Certificate</title>${style}</head><body>${contentElem.outerHTML}</body></html>`);
+                    printWin.document.write(`<html><head><title>VRP Certificate</title>${style}</head><body>${contentElem.outerHTML}</body></html>`);
                     printWin.document.close();
                     printWin.focus();
                     printWin.print();
                 },
-                // export .doc
                 exportDoc() {
                     if (!this.showCertificate || this.selectedMonths.length === 0 || this.displayedVrpList.length === 0) {
-                        alert('Generate certificate with valid selections first.');
+                        alert('Generate certificate first.');
                         return;
                     }
                     const header = `
@@ -513,7 +307,7 @@
                     const blob = new Blob([full], { type: 'application/msword' });
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = `VRP_Certificate_${this.selectedMonths.join('_')}.doc`;
+                    a.download = `VRP_${this.selectedMonths[0]}.doc`;
                     a.click();
                     URL.revokeObjectURL(a.href);
                 }
@@ -529,6 +323,26 @@
                     },
                     immediate: true
                 }
+            },
+            created() {
+                const d = new Date();
+                this.today = d.toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+                
+                // always generate rolling 12 past months (no hardcoded year)
+                const rolling = generateLast12Months();
+                this.eligibleMonthsList = rolling;
+
+                // default: most recent past month (first item)
+                if (rolling.length > 0) {
+                    this.selectedMonths = [rolling[0].fullLabel];
+                }
+
+                // ensure default days for every month in the list
+                rolling.forEach(e => {
+                    if (!this.daysPerMonth[e.fullLabel]) {
+                        this.$set(this.daysPerMonth, e.fullLabel, 30);
+                    }
+                });
             }
         });
     })();

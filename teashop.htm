@@ -1,0 +1,525 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea shop · bill ₹700–5000</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body {
+            background: #e5e7eb;
+            display: flex;
+            justify-content: center;
+            padding: 25px 15px;
+            margin: 0;
+        }
+        .card {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 18px;
+            padding: 25px 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            border-bottom: 3px double #b45309;
+            padding-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px 18px;
+            background: #fef9c3;
+            padding: 18px 20px;
+            border-radius: 28px;
+            margin-bottom: 25px;
+            border: 2px solid #b45309;
+            justify-content: space-evenly;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 100px;
+        }
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #422006;
+            margin-bottom: 3px;
+        }
+        .input-group input, .input-group select {
+            background: white;
+            border: 2px solid #b45309;
+            border-radius: 40px;
+            padding: 8px 14px;
+            font-weight: bold;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px #fde68a;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #b45309;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 2px solid #7b341e;
+            letter-spacing: 0.8px;
+            transition: 0.15s;
+            box-shadow: 0 4px 0 #7b341e;
+        }
+        .btn:hover {
+            background: #9a4408;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #7b341e;
+        }
+        .btn.print {
+            background: #1e3a8a;
+            border-color: #172554;
+            box-shadow: 0 4px 0 #172554;
+        }
+        .bill-paper {
+            background: #fffaf0;
+            border: 3px solid #422006;
+            padding: 25px 25px 20px 25px;
+            border-radius: 30px 30px 15px 15px;
+            box-shadow: inset 0 0 0 2px #fde68a, 0 10px 15px -5px #3f2e1e;
+            font-size: 1rem;
+        }
+        .to-address {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            border-left: 8px solid #b45309;
+            padding-left: 20px;
+            background: #fef3c7;
+            border-radius: 0 40px 40px 0;
+        }
+        .to-address p {
+            margin: 5px 0;
+        }
+        .date-right {
+            text-align: right;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 5px 0 15px;
+        }
+        .salutation {
+            font-size: 1.2rem;
+            margin: 10px 0 5px;
+            font-style: italic;
+        }
+        .bill-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 20px;
+            border: 3px solid #422006;
+            font-size: 0.95rem;
+        }
+        .bill-table th {
+            background: #b45309;
+            color: white;
+            padding: 10px 4px;
+            border: 2px solid #2c1a0f;
+            text-align: center;
+        }
+        .bill-table td {
+            border: 2px solid #422006;
+            padding: 6px 4px;
+            text-align: center;
+            background: #ffffffd9;
+            font-weight: 500;
+        }
+        .bill-table tfoot td {
+            background: #fde68a;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border: 3px solid #422006;
+        }
+        .amount-words {
+            font-size: 1.2rem;
+            text-align: right;
+            margin-top: 15px;
+            border-top: 3px double #b45309;
+            padding-top: 12px;
+            font-weight: 600;
+        }
+        .signature {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            font-size: 1.2rem;
+            align-items: end;
+        }
+        .signature div:last-child {
+            border-top: 2px dashed #422006;
+            min-width: 200px;
+            text-align: center;
+            padding-top: 8px;
+            font-style: italic;
+        }
+        .error-message {
+            color: #b91c1c;
+            font-weight: bold;
+            background: #fee2e2;
+            padding: 10px;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .card {
+                box-shadow: none;
+                padding: 0;
+                background: white;
+                max-width: 100%;
+            }
+            h1, .controls, .btn, .button-group, .input-group {
+                display: none !important;
+            }
+            .bill-paper {
+                border: none;
+                box-shadow: none;
+                background: white;
+                padding: 0.4in 0.3in;
+                margin: 0 auto;
+                width: 100%;
+                page-break-inside: avoid;
+            }
+            .bill-table th {
+                background: #b45309 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .bill-table tfoot td {
+                background: #fde68a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .to-address {
+                background: #fef3c7 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>☕ TEA & BISCUIT BILL · ₹700 TO ₹5000</h1>
+    <div class="controls">
+        <div class="input-group">
+            <label>📅 MONTH</label>
+            <select id="monthSelect">
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>📆 YEAR</label>
+            <input type="number" id="yearInput" value="2026" min="2000" max="2100" step="1">
+        </div>
+        <div class="input-group">
+            <label>🍪 BISCUIT RATE (₹)</label>
+            <input type="number" id="biscuitRate" value="5" min="1" step="1">
+        </div>
+        <div class="input-group">
+            <label>🍵 TEA RATE (₹)</label>
+            <input type="number" id="teaRate" value="5" min="1" step="1">
+        </div>
+        <div class="input-group">
+            <label>💰 TOTAL AMOUNT (₹)</label>
+            <input type="number" id="totalAmount" value="2000" min="700" max="5000" step="1">
+        </div>
+        <div class="button-group">
+            <button class="btn" id="genBtn">⚡ GENERATE BILL</button>
+            <button class="btn print" id="printBtn">🖨️ PRINT / EXPORT</button>
+        </div>
+    </div>
+
+    <!-- Bill container (only this prints) -->
+    <div id="billContainer" class="bill-paper">
+        <!-- dynamic bill will be injected here -->
+    </div>
+</div>
+
+<script>
+(function() {
+    const monthSel = document.getElementById('monthSelect');
+    const yearInp = document.getElementById('yearInput');
+    const biscuitRateInp = document.getElementById('biscuitRate');
+    const teaRateInp = document.getElementById('teaRate');
+    const totalAmountInp = document.getElementById('totalAmount');
+    const genBtn = document.getElementById('genBtn');
+    const printBtn = document.getElementById('printBtn');
+    const billContainer = document.getElementById('billContainer');
+
+    monthSel.value = "0"; // January default
+
+    // ---------- number to words (Indian style) ----------
+    function numberToWordsIndian(num) {
+        if (num === 0) return "Zero";
+        const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+        const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+        const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+        
+        function convertBelowThousand(n) {
+            if (n === 0) return "";
+            let str = "";
+            if (n >= 100) {
+                str += ones[Math.floor(n / 100)] + " Hundred ";
+                n %= 100;
+            }
+            if (n >= 20) {
+                str += tens[Math.floor(n / 10)] + " ";
+                n %= 10;
+            } else if (n >= 10) {
+                str += teens[n - 10] + " ";
+                n = 0;
+            }
+            if (n > 0) {
+                str += ones[n] + " ";
+            }
+            return str.trim();
+        }
+
+        let words = "";
+        if (num >= 1000) {
+            const thousands = Math.floor(num / 1000);
+            words += convertBelowThousand(thousands) + " Thousand ";
+            num %= 1000;
+        }
+        if (num > 0) {
+            words += convertBelowThousand(num);
+        }
+        return words.trim() + " only";
+    }
+
+    // ---------- get allowed dates (all working days: Mon-Fri + 4th Saturday) ----------
+    function getAllowedDates(monthIndex, year) {
+        const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+        const saturdays = [];
+        for (let d = 1; d <= lastDay; d++) {
+            const dow = new Date(year, monthIndex, d).getDay();
+            if (dow === 6) saturdays.push(d);
+        }
+        let fourthSat = null;
+        if (saturdays.length >= 4) fourthSat = saturdays[3]; // 4th saturday
+
+        const allowed = [];
+        for (let d = 1; d <= lastDay; d++) {
+            const dow = new Date(year, monthIndex, d).getDay();
+            if (dow === 0) continue; // skip Sunday
+            if (dow === 6) {
+                if (fourthSat !== null && d === fourthSat) allowed.push(d);
+            } else {
+                allowed.push(d); // weekdays
+            }
+        }
+        return allowed.sort((a,b) => a-b);
+    }
+
+    // ---------- generate all valid (b,t) pairs with 7≤b≤25, 7≤t≤25, |b-t|≤1 ----------
+    function getAllowedPairs(rB, rT) {
+        const pairs = [];
+        for (let b = 7; b <= 25; b++) {
+            for (let t = 7; t <= 25; t++) {
+                if (Math.abs(b - t) <= 1) {
+                    pairs.push({ b, t, cost: b * rB + t * rT });
+                }
+            }
+        }
+        return pairs;
+    }
+
+    // ---------- local search to achieve exact total ----------
+    function findSolution(N, targetTotal, pairs, maxAttempts = 6000) {
+        // Random initial assignment
+        let current = [];
+        for (let i = 0; i < N; i++) {
+            const idx = Math.floor(Math.random() * pairs.length);
+            current.push({ ...pairs[idx] });
+        }
+        let currentTotal = current.reduce((sum, p) => sum + p.cost, 0);
+        let diff = targetTotal - currentTotal;
+
+        if (diff === 0) return current;
+
+        for (let restart = 0; restart < 5; restart++) {
+            for (let iter = 0; iter < maxAttempts; iter++) {
+                const dayIdx = Math.floor(Math.random() * N);
+                const oldPair = current[dayIdx];
+                let bestPair = null;
+                let bestDiff = Math.abs(diff);
+                const shuffled = [...pairs];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                for (const newPair of shuffled) {
+                    if (newPair.b === oldPair.b && newPair.t === oldPair.t) continue;
+                    const newDiff = targetTotal - (currentTotal - oldPair.cost + newPair.cost);
+                    if (newDiff === 0) {
+                        current[dayIdx] = { ...newPair };
+                        return current;
+                    }
+                    if (Math.abs(newDiff) < bestDiff) {
+                        bestDiff = Math.abs(newDiff);
+                        bestPair = newPair;
+                    }
+                }
+                if (bestPair) {
+                    currentTotal = currentTotal - oldPair.cost + bestPair.cost;
+                    diff = targetTotal - currentTotal;
+                    current[dayIdx] = { ...bestPair };
+                    if (diff === 0) return current;
+                }
+            }
+            // reinitialize randomly
+            current = [];
+            for (let i = 0; i < N; i++) {
+                const idx = Math.floor(Math.random() * pairs.length);
+                current.push({ ...pairs[idx] });
+            }
+            currentTotal = current.reduce((sum, p) => sum + p.cost, 0);
+            diff = targetTotal - currentTotal;
+            if (diff === 0) return current;
+        }
+        return null;
+    }
+
+    // ---------- render bill (clean, without extra headings) ----------
+    function renderBill() {
+        const monthIndex = parseInt(monthSel.value);
+        const year = parseInt(yearInp.value) || 2026;
+        const rBiscuit = parseFloat(biscuitRateInp.value) || 5;
+        const rTea = parseFloat(teaRateInp.value) || 5;
+        const total = parseFloat(totalAmountInp.value) || 0;
+
+        if (total < 700 || total > 5000) {
+            billContainer.innerHTML = `<div class="error-message">❌ Total amount must be between ₹700 and ₹5000.</div>`;
+            return;
+        }
+
+        const allowedDates = getAllowedDates(monthIndex, year);
+        if (allowedDates.length === 0) {
+            billContainer.innerHTML = `<div class="error-message">❌ No working days in this month.</div>`;
+            return;
+        }
+
+        const pairs = getAllowedPairs(rBiscuit, rTea);
+        const minCost = Math.min(...pairs.map(p => p.cost));
+        const maxCost = Math.max(...pairs.map(p => p.cost));
+        const N = allowedDates.length;
+        if (total < N * minCost || total > N * maxCost) {
+            billContainer.innerHTML = `<div class="error-message">❌ Total must be between ₹${N*minCost} and ₹${N*maxCost} for this month.</div>`;
+            return;
+        }
+
+        const rows = findSolution(N, total, pairs);
+        if (!rows) {
+            billContainer.innerHTML = `<div class="error-message">❌ Could not find a combination. Try slightly different amount or rates.</div>`;
+            return;
+        }
+
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const yearShort = year.toString().slice(-2);
+        const today = new Date();
+        const formattedToday = `${(today.getMonth()+1).toString().padStart(2,'0')}/${today.getDate().toString().padStart(2,'0')}/${today.getFullYear()}`;
+
+        let tableRows = '';
+        rows.forEach((row, idx) => {
+            const dateStr = `${allowedDates[idx]}/${monthIndex+1}/${yearShort}`;
+            tableRows += `<tr>
+                <td>${dateStr}</td>
+                <td>${row.b}</td><td>${rBiscuit}</td>
+                <td>${row.t}</td><td>${rTea}</td>
+                <td>₹${row.cost}</td>
+            </tr>`;
+        });
+
+        const totalWords = numberToWordsIndian(total);
+
+        // BILL CONTENT – only address, table, total, signature
+        const billHTML = `
+            <div class="to-address">
+                <p><strong>To,</strong><br>The Prodhan<br>Bhagabanpur Gram Panchayat<br>Vill+P.O-Arbara, Chanchal, Malda</p>
+            </div>
+            <div class="date-right">Dated- ${formattedToday}</div>
+            <div class="salutation">Madam,</div>
+            <p style="margin: 5px 0 15px; font-size:1.1rem;">Most respectfully I do hereby state that, I supplied Tea & Biscuit at your Gram Panchayat office in your verbal order for the period mentioned below. Therefore I request my bill as soon as possible & oblige.</p>
+            
+            <table class="bill-table">
+                <thead>
+                    <tr><th rowspan="2">Date</th><th colspan="4">Description of Bill</th><th rowspan="2">Total (₹)</th></tr>
+                    <tr><th>Biscuit (Nos)</th><th>Rate (₹)</th><th>Tea (Cup)</th><th>Rate (₹)</th></tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="5" style="text-align:right; font-weight:800;">TOTAL:</td><td>₹${total}</td></tr>
+                </tfoot>
+            </table>
+
+            <div class="amount-words">Rupees ${totalWords}</div>
+
+            <div class="signature">
+                <div>Yours Sincerely</div>
+                <div>Signature</div>
+            </div>
+        `;
+
+        billContainer.innerHTML = billHTML;
+    }
+
+    // initial render
+    renderBill();
+
+    genBtn.addEventListener('click', renderBill);
+    printBtn.addEventListener('click', () => window.print());
+})();
+</script>
+</body>
+</html>
+```

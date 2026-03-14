@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gram Sansad · round time · export fixed</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+        }
+        body {
+            background: #e0efe9;
+            margin: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            padding: 20px 18px 30px 18px;
+            box-shadow: 0 10px 30px rgba(0, 40, 20, 0.12);
+        }
+
+        /* ----- CENTRED OFFICE HEADER ----- */
+        .office-header {
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        .office-header .line1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #04362b;
+            text-transform: uppercase;
+        }
+        .office-header .line2 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1b5f4d;
+        }
+        .office-header .line3 {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #2e7a65;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            margin: 10px 0 5px 0;
+            color: #1d5b4b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 0.85rem;
+            background: #c5eadc;
+            padding: 5px 16px;
+            border-radius: 30px;
+            font-weight: 400;
+        }
+        .control-panel {
+            background: #effbf6;
+            border-radius: 40px;
+            padding: 20px 25px;
+            margin: 20px 0 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 25px 40px;
+            border: 1px solid #b9e0d2;
+        }
+        .range-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .range-item label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+            color: #236b58;
+            text-transform: uppercase;
+        }
+        input[type="date"], input[type="time"] {
+            padding: 9px 16px;
+            border-radius: 40px;
+            border: 1px solid #96cfbb;
+            background: white;
+            font-size: 0.95rem;
+            min-width: 170px;
+        }
+        .generate-btn {
+            background: #1d6e5b;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 8px rgba(0,50,20,0.25);
+            cursor: pointer;
+            transition: 0.1s;
+            margin-left: auto;
+        }
+        .generate-btn:hover { background: #0f5847; }
+
+        /* TABLE WRAPPED COMPACT */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 18px;
+            border: 1px solid #b7dcd0;
+            background: white;
+            margin: 20px 0 25px;
+            max-width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            table-layout: auto;
+            min-width: 700px;
+            white-space: normal;
+        }
+        th {
+            background: #c0e2d6;
+            color: #0d4236;
+            font-weight: 600;
+            padding: 12px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            border-right: 1px solid #9fcfbf;
+            vertical-align: bottom;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        th:last-child { border-right: none; }
+        td {
+            padding: 10px 6px;
+            border-bottom: 1px solid #cce8df;
+            border-right: 1px solid #d3ece2;
+            vertical-align: top;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        td:last-child { border-right: none; }
+
+        /* column width hints */
+        th:nth-child(1) { width: 4%; }
+        th:nth-child(2) { width: 12%; }
+        th:nth-child(3) { width: 15%; }
+        th:nth-child(4) { width: 10%; }
+        th:nth-child(5) { width: 13%; }
+        th:nth-child(6) { width: 18%; }
+        th:nth-child(7) { width: 8%; }
+        th:nth-child(8) { width: 7%; }
+
+        .editable-place, .editable-date, .editable-time {
+            width: 100%;
+            border: 1px dashed #3fa786;
+            background-color: #fcfef9;
+            border-radius: 12px;
+            padding: 8px 8px;
+            font-size: 0.78rem;
+            font-family: inherit;
+            resize: vertical;
+            word-break: break-word;
+            line-height: 1.3;
+            box-sizing: border-box;
+        }
+        .editable-place { min-width: 130px; }
+        .editable-date, .editable-time {
+            background-color: #f2fcf7;
+            border: 1px solid #62bb9b;
+            text-align: center;
+        }
+        .editable-place:focus, .editable-date:focus, .editable-time:focus {
+            outline: 2px solid #2b8369;
+            background-color: #ffffec;
+        }
+        .member-cell {
+            font-weight: 500;
+            color: #0e4c3c;
+            white-space: normal;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .print-btn, .export-btn {
+            background: white;
+            border: 2px solid #1d6e5b;
+            color: #1d6e5b;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.95rem;
+        }
+        .print-btn:hover, .export-btn:hover {
+            background: #e0f2ea;
+            border-color: #0b5342;
+        }
+        .footnote {
+            margin-top: 20px;
+            background: #e1f3ec;
+            padding: 10px 25px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #246454;
+        }
+
+        @media print {
+            body { background: white; margin: 0.4in; }
+            .control-panel, .action-buttons, .generate-btn, .footnote, h1 small { display: none; }
+            .container { box-shadow: none; padding: 0; }
+            .table-wrapper { border: 1px solid #000; }
+            th { background: #ddd; }
+            .editable-place, .editable-date, .editable-time {
+                border: none; background: transparent; padding: 2px;
+                box-shadow: none;
+            }
+            input { border: none; background: transparent; }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="appContainer">
+
+    <!-- OFFICE HEADER (exact) -->
+    <div class="office-header">
+        <div class="line1">Office of the</div>
+        <div class="line2">BHAGABANPUR GRAM PANCHAYAT</div>
+        <div class="line3">P.O. - Arbara, Dist.- Malda, (W. B.)</div>
+    </div>
+
+    <h1>
+        📋 ग्राम संसद · round time
+        <small>2, 2.30, 3, 3.30 … export includes data</small>
+    </h1>
+
+    <div class="control-panel">
+        <div class="range-item">
+            <label>📅 FROM DATE</label>
+            <input type="date" id="fromDate" value="2025-06-09">
+        </div>
+        <div class="range-item">
+            <label>📅 TO DATE</label>
+            <input type="date" id="toDate" value="2025-06-18">
+        </div>
+        <div class="range-item">
+            <label>⏱️ FROM TIME</label>
+            <input type="time" id="fromTime" value="14:00">
+        </div>
+        <div class="range-item">
+            <label>⏱️ TO TIME</label>
+            <input type="time" id="toTime" value="16:30">
+        </div>
+        <button class="generate-btn" id="generateRandom">✨ randomize dates & round times</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="gramTable">
+            <thead>
+                <tr>
+                    <th>SL NO</th>
+                    <th>NAME GRAM SANSAD & No</th>
+                    <th>Gram Panchayat Seat</th>
+                    <th>Area</th>
+                    <th>Member</th>
+                    <th>Meeting Place (editable)</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="action-buttons">
+        <button class="print-btn" id="printTable">🖨️ Print</button>
+        <button class="export-btn" id="exportDoc">📄 Export .doc (with data)</button>
+    </div>
+    <div class="footnote">
+        ✅ Times are round: 2 PM, 2.30 PM, 3 PM … (half hour increments). Export now preserves all edits.
+    </div>
+</div>
+
+<script>
+(function() {
+    const baseRows = [
+        { slno: "1", gramName: "Bhagabanpur/I", seat: "BHAGABANPUR/I-1, BHAGABANPUR/I-2", area: "GHAGARPAR, NIMGACHHI", member: "FENSHI KHATUN, REJAUL KARIM", place: "Nimgachhi SS" },
+        { slno: "2", gramName: "Bhagabanpur/II", seat: "BHAGABANPUR/II-3", area: "JASUYA", member: "NARGISH KHATUN", place: "Jasua Pry School" },
+        { slno: "3", gramName: "Bhagabanpur/III", seat: "BHAGABANPUR/III-4", area: "BHAGABANPUR", member: "KESHOMATI BARMAN", place: "Bhagabanpur Pry School" },
+        { slno: "4", gramName: "Bhagabanpur/IV", seat: "BHAGABANPUR/IV-5", area: "NAYANPUR", member: "ALO MAHALDAR", place: "Nayanpur Pry School" },
+        { slno: "5", gramName: "Bhagabanpur/V", seat: "BHAGABANPUR/V-6", area: "RAMDEBPUR", member: "TAJMIRA YEASMIN", place: "Ramdebpur Pry School" },
+        { slno: "6", gramName: "Bhagabanpur/VI", seat: "BHAGABANPUR/VI-7", area: "JOTCHANDI", member: "ANTARA KHATUN BIBI", place: "Jotchandi Bullet Club & Library" },
+        { slno: "7", gramName: "Bhagabanpur/VII", seat: "BHAGABANPUR/VII-8, BHAGABANPUR/VII-9", area: "D KALIGUNJ, UTTAR KALIGUNJ", member: "ABU BAKKAR SIDDIQUE, NASIMA BANU", place: "D. Kaligunj Pry School" },
+        { slno: "8", gramName: "Bhagabanpur/VIII", seat: "BHAGABANPUR/VIII-10", area: "DARAKANDI", member: "MD SARIF ALI", place: "Chandipur Pry School" },
+        { slno: "9", gramName: "Bhagabanpur/IX", seat: "BHAGABANPUR/IX-11", area: "BHEBA", member: "HUSNARA KHATUN", place: "Bheba Pry School(E)" },
+        { slno: "10", gramName: "Bhagabanpur/X", seat: "BHAGABANPUR/X-12", area: "BHEBA", member: "MD ALAMIN", place: "Bheba Pry School(W)" },
+        { slno: "11", gramName: "Bhagabanpur/XI", seat: "BHAGABANPUR/XI-13", area: "SERBABAR", member: "FERDOUSI BEGAM", place: "Serbabar MSK" },
+        { slno: "12", gramName: "Bhagabanpur/XII", seat: "BHAGABANPUR/XII-14", area: "SERBABAR", member: "INJILA BIBI", place: "Serbabar Pry School" },
+        { slno: "13", gramName: "Bhagabanpur/XIII", seat: "BHAGABANPUR/XIII-15", area: "CHARALU", member: "GULAB ALI", place: "Charalu Pry School" },
+        { slno: "14", gramName: "Bhagabanpur/XIV", seat: "BHAGABANPUR/XIV-16", area: "HARIPUR", member: "BENEJI KHATUN", place: "Purba Nichitpur School(E)" },
+        { slno: "15", gramName: "Bhagabanpur/XV", seat: "BHAGABANPUR/XV-17", area: "HARIPUR", member: "MD ATAUR RAHAMAN", place: "Purba Nichitpur School(W)" },
+        { slno: "16", gramName: "Bhagabanpur/XXI", seat: "BHAGABANPUR/XXI-18", area: "PANBARA", member: "KAWSARA BEGAM", place: "Bagunj Pry School" },
+        { slno: "17", gramName: "Bhagabanpur/XXII", seat: "BHAGABANPUR/XXII-19", area: "KHADIYARPUR", member: "AFAJUDDIN AHAMED", place: "Arbara High School" },
+        { slno: "18", gramName: "Bhagabanpur/XXIII", seat: "BHAGABANPUR/XXIII-20", area: "ARBARA", member: "ZED RAHAMAN", place: "Arbara High School" },
+        { slno: "19", gramName: "Bhagabanpur/XXIX", seat: "BHAGABANPUR/XXIX-21", area: "ARBARA", member: "MOUSUMI KHATUN", place: "Arbara High School" },
+        { slno: "20", gramName: "Bhagabanpur/XXX", seat: "BHAGABANPUR/XXX-22", area: "KHASALPUR", member: "SYED NEAMUL HOQUE", place: "Arbara High School" }
+    ];
+
+    const tbody = document.getElementById('tableBody');
+
+    // initial render with hardcoded dates and "2 P.M" (but we will change to PM style)
+    function renderInitial() {
+        let html = '';
+        baseRows.forEach((r, idx) => {
+            let initDate = '';
+            if (idx+1 === 1) initDate = '09/06/2025';
+            else if (idx+1 === 2) initDate = '09/06/2025';
+            else if (idx+1 === 3) initDate = '09/06/2025';
+            else if (idx+1 === 4) initDate = '10/06/2025';
+            else if (idx+1 === 5) initDate = '10/06/2025';
+            else if (idx+1 === 6) initDate = '10/06/2025';
+            else if (idx+1 === 7) initDate = '11/06/2025';
+            else if (idx+1 === 8) initDate = '11/06/2025';
+            else if (idx+1 === 9) initDate = '11/06/2025';
+            else if (idx+1 === 10) initDate = '12/06/2025';
+            else if (idx+1 === 11) initDate = '12/06/2025';
+            else if (idx+1 === 12) initDate = '12/06/2025';
+            else if (idx+1 === 13) initDate = '13/06/2025';
+            else if (idx+1 === 14) initDate = '13/06/2025';
+            else if (idx+1 === 15) initDate = '13/06/2025';
+            else if (idx+1 === 16) initDate = '16/06/2025';
+            else if (idx+1 === 17) initDate = '16/06/2025';
+            else if (idx+1 === 18) initDate = '16/06/2025';
+            else if (idx+1 === 19) initDate = '17/06/2025';
+            else if (idx+1 === 20) initDate = '17/06/2025';
+
+            html += `<tr>
+                <td>${r.slno}</td>
+                <td>${r.gramName}</td>
+                <td>${r.seat}</td>
+                <td>${r.area}</td>
+                <td class="member-cell">${r.member}</td>
+                <td><input type="text" class="editable-place" value="${r.place.replace(/"/g, '&quot;')}"></td>
+                <td><input type="text" class="editable-date" value="${initDate}"></td>
+                <td><input type="text" class="editable-time" value="2 PM"></td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+    renderInitial();
+
+    // ----- random date (dd/mm/yyyy) -----
+    function getRandomDate(fromStr, toStr) {
+        const start = new Date(fromStr + 'T00:00:00');
+        const end = new Date(toStr + 'T00:00:00');
+        if (start > end) return null;
+        const diff = end.getTime() - start.getTime();
+        const rand = new Date(start.getTime() + Math.random() * diff);
+        const d = String(rand.getDate()).padStart(2,'0');
+        const m = String(rand.getMonth()+1).padStart(2,'0');
+        const y = rand.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    // ----- random ROUND time (only on the hour or half-hour) -----
+    function getRandomRoundTime(fromTime, toTime) {
+        const [fh, fm] = fromTime.split(':').map(Number);
+        const [th, tm] = toTime.split(':').map(Number);
+        let fromMin = fh*60 + fm;
+        let toMin = th*60 + tm;
+
+        // round fromMin DOWN to nearest 0 or 30? better: include all half-hour steps between from and to.
+        // generate list of allowed minutes (multiples of 30) between fromMin and toMin inclusive.
+        let allowed = [];
+        let current = Math.ceil(fromMin / 30) * 30;  // next 30-min mark after fromMin
+        // but also include fromMin if it is exactly on a half-hour boundary? we allow if fromMin %30 ===0
+        if (fromMin % 30 === 0) allowed.push(fromMin);
+        while (current <= toMin) {
+            allowed.push(current);
+            current += 30;
+        }
+
+        if (allowed.length === 0) {
+            // fallback: nearest half hour
+            let approx = Math.round((fromMin + toMin) / 60 / 0.5) * 30;
+            allowed = [Math.min(toMin, Math.max(fromMin, approx))];
+        }
+
+        const randMin = allowed[Math.floor(Math.random() * allowed.length)];
+        const h24 = Math.floor(randMin / 60);
+        const minute = randMin % 60;
+
+        const period = h24 >= 12 ? 'PM' : 'AM';
+        let h12 = h24 % 12;
+        if (h12 === 0) h12 = 12;
+
+        if (minute === 0) {
+            return `${h12} ${period}`;
+        } else {
+            // minute will always be 30 because we only push multiples of 30
+            return `${h12}.${minute} ${period}`;   // e.g., "2.30 PM"
+        }
+    }
+
+    // randomize button
+    document.getElementById('generateRandom').addEventListener('click', function() {
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+        const fromTime = document.getElementById('fromTime').value;
+        const toTime = document.getElementById('toTime').value;
+
+        if (!fromDate || !toDate || !fromTime || !toTime) {
+            alert('Please fill all date/time ranges.');
+            return;
+        }
+        if (fromDate > toDate) {
+            alert('From date must be ≤ To date');
+            return;
+        }
+
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(row => {
+            const dateInput = row.querySelector('.editable-date');
+            const timeInput = row.querySelector('.editable-time');
+            if (dateInput && timeInput) {
+                const newDate = getRandomDate(fromDate, toDate);
+                if (newDate) dateInput.value = newDate;
+                timeInput.value = getRandomRoundTime(fromTime, toTime);
+            }
+        });
+    });
+
+    // Print
+    document.getElementById('printTable').addEventListener('click', () => window.print());
+
+    // ---------------- FIXED EXPORT (preserves every input) ----------------
+    document.getElementById('exportDoc').addEventListener('click', function() {
+        // grab current LIVE table
+        const liveTable = document.getElementById('gramTable');
+        // deep clone
+        const cloneTable = liveTable.cloneNode(true);
+
+        // force all current input values into the clone's value attributes
+        const liveInputs = liveTable.querySelectorAll('input');
+        const cloneInputs = cloneTable.querySelectorAll('input');
+        for (let i = 0; i < liveInputs.length; i++) {
+            // set attribute 'value' to the live value (so it shows in Word)
+            cloneInputs[i].setAttribute('value', liveInputs[i].value);
+            // also set innerHTML for safety (some editors)
+            cloneInputs[i].innerHTML = liveInputs[i].value;
+        }
+
+        // get office header html
+        const headerHtml = document.querySelector('.office-header').outerHTML;
+
+        // style for export (clean, includes header)
+        const exportStyles = `
+            <style>
+                body { padding: 30px; font-family: 'Segoe UI', Arial, sans-serif; }
+                .office-header { text-align: center; margin-bottom: 25px; }
+                .office-header .line1 { font-size: 1.6rem; font-weight: 600; color: #04362b; text-transform: uppercase; }
+                .office-header .line2 { font-size: 1.2rem; font-weight: 500; color: #1b5f4d; }
+                .office-header .line3 { font-size: 1rem; color: #2e7a65; }
+                table { border-collapse: collapse; width: 100%; font-size: 11pt; }
+                th { background: #c0e2d6; padding: 8px; border: 1px solid #0d4236; }
+                td { border: 1px solid #246454; padding: 6px; vertical-align: top; }
+                .editable-place, .editable-date, .editable-time { border: 1px solid #2b8369; background: #f9fdfb; padding: 5px; width: 95%; }
+                .member-cell { font-weight: 500; }
+                .control-panel, .action-buttons, .generate-btn, .footnote, h1 { display: none; }
+            </style>
+        `;
+
+        const fullHtml = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Gram Sansad Schedule (with data)</title>${exportStyles}</head>
+<body>
+${headerHtml}
+${cloneTable.outerHTML}
+<p style="margin-top:20px;"><em>generated by Gram Sansad scheduler – all round times & edits preserved</em></p>
+</body>
+</html>`;
+
+        const blob = new Blob([fullHtml], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'gram_sansad_schedule.doc';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    });
+
+})();
+</script>
+</body>
+</html>

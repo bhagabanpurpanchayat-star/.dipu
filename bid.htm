@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vendor Bid Entry – NIT hyperlink modal</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #1e1e1e; color: #eee; margin: 0; padding: 15px; font-size: 13px; }
+    h2 { color: #fff; font-size: 20px; margin: 0 0 15px 0; display: flex; align-items: center; gap: 12px; }
+    .toolbar { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .toolbar input { padding: 6px 10px; border-radius: 4px; border: 1px solid #555; width: 260px; background: #3b3b3b; color: #fff; }
+    .toolbar button { padding: 6px 16px; background: #28a745; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .toolbar button:hover { background: #218838; }
+    .spinner { width: 14px; height: 14px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+
+    .table-container { height: calc(100vh - 170px); overflow-y: auto; border: 1px solid #444; border-radius: 6px; background: #252525; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #444; padding: 8px 6px; text-align: left; white-space: nowrap; }
+    thead th { position: sticky; top: 0; background: #0a2f44; color: #fff; font-weight: 600; z-index: 2; }
+    tbody tr:hover { background: #2a3a4a; }
+    td a { color: #7abaff; text-decoration: none; font-weight: 500; }
+    td a:hover { text-decoration: underline; color: #a0c8ff; cursor: pointer; }
+    #message { margin-bottom: 12px; padding: 10px; display: none; border-radius: 5px; font-weight: 500; text-align: center; }
+    #message.success { background: #28a745; color: white; }
+    #message.error { background: #dc3545; color: white; }
+    #message.loading { background: #0d6efd; color: white; }
+
+    /* MODERN MODAL – VENDOR LIST STYLE */
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
+    .modal-content { background: #2b2b2b; margin: 20px auto; padding: 0; border-radius: 12px; width: 800px; max-width: 96%; color: #eee; box-shadow: 0 15px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; max-height: 85vh; }
+    .modal-header { background: #1e3a5f; padding: 18px 22px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; font-size: 18px; color: white; font-weight: 500; }
+    .modal-header .close-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 20px 22px; overflow-y: auto; background: #2b2b2b; }
+    .nit-summary { background: #1e3a3a; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 20px; border-left: 5px solid #17a2b8; }
+    .summary-item { min-width: 200px; }
+    .summary-item strong { color: #b0d4ff; display: inline-block; width: 110px; }
+    .summary-item span { color: #fff; font-weight: 500; }
+
+    .vendor-table { width: 100%; border-collapse: collapse; background: #1e1e1e; border-radius: 8px; overflow: hidden; }
+    .vendor-table th { background: #0d3d4c; color: white; padding: 10px 8px; font-weight: 500; text-align: left; }
+    .vendor-table td { padding: 12px 8px; border-bottom: 1px solid #3a4a5a; color: #ddd; }
+    .vendor-table tr:last-child td { border-bottom: none; }
+    .vendor-table input { width: 100%; padding: 8px; background: #333; border: 1px solid #5a6b7a; color: white; border-radius: 4px; font-size: 13px; }
+    .vendor-table input:focus { outline: 2px solid #0d6efd; background: #3d3d3d; }
+    .action-btn { padding: 8px 16px; background: #0d6efd; border: none; border-radius: 5px; color: white; font-weight: 600; cursor: pointer; font-size: 12px; }
+    .action-btn:hover { background: #0b5ed7; }
+    .modal-footer { background: #222; padding: 16px 22px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #444; }
+    .btn-secondary { background: #6c757d; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; }
+    .btn-secondary:hover { background: #5a6268; }
+    .btn-primary { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 5px; cursor: pointer; font-weight: 600; }
+    .btn-primary:hover { background: #218838; }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h2>📋 Vendor Bid Entry – NIT Hyperlink modal</h2>
+  <div id="message"></div>
+  <div class="toast" id="toast">✓ Saved Successfully</div>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="🔍 Search by UNIQUE NIT, NIT, Vendor..." oninput="filterTable()" />
+    <button id="refreshBtn" onclick="refreshData()">⟳ Refresh</button>
+  </div>
+
+  <div class="table-container">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>UNIQUE NIT (click)</th>
+          <th>NIT</th>
+          <th>SL</th>
+          <th>NIT DATE</th>
+          <th>VENDOR</th>
+          <th>Name of the work</th>
+          <th>Source of Fund</th>
+          <th>ESTIMATE VALUE</th>
+          <th>Bid Amount</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- DETAIL MODAL: appears when UNIQUE NIT clicked -->
+  <div id="nitModal" class="modal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalNitDisplay">NIT: <span style="font-weight:300;"></span></h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- filled dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Close</button>
+        <button class="btn-primary" id="modalUpdateAllBtn" onclick="updateAllVendorBids()">Update all changed</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwZkB0c9Qka5pxSG7Xa9KpOBACeT-5i0FtAGmx8YCKsvBlemhtCzaXVg01eYKAyhDfweg/exec";
+    let tableData = [];        // array of {originalIndex, data: rowArray}
+    let allData = [];          // raw rows from sheet
+    let currentModalUniqueNit = null;  // store NIT for which modal is open
+    let modalVendorRows = [];  // holds {vendor, bidAmount, rowIndex, originalRow} for modal table
+
+    async function refreshData() {
+      const btn = document.getElementById("refreshBtn");
+      btn.innerHTML = `<span class="spinner"></span> Refreshing...`;
+      btn.disabled = true;
+      showMessage("Refreshing...", "loading");
+      await loadData();
+      btn.innerHTML = `⟳ Refresh`;
+      btn.disabled = false;
+      showMessage("Data loaded ✅", "success");
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch(scriptURL + "?action=getBillPaymentData");
+        const data = await res.json();
+        allData = data.slice(1); // skip header
+        tableData = allData.map((row, idx) => ({ originalIndex: idx, data: row }));
+        renderTable(tableData);
+      } catch (error) {
+        showMessage("Error loading data: " + error.message, "error");
+      }
+    }
+
+    function formatDateToDDMMYYYY(dv) {
+      if (!dv) return "";
+      try {
+        if (typeof dv === 'string' && dv.includes('T')) {
+          const d = new Date(dv);
+          if (!isNaN(d)) return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+        if (dv instanceof Date) {
+          return `${String(dv.getDate()).padStart(2,'0')}/${String(dv.getMonth()+1).padStart(2,'0')}/${dv.getFullYear()}`;
+        }
+        if (typeof dv === 'string' && dv.match(/^\d{4}-\d{2}-\d{2}/)) {
+          const [y,m,d] = dv.split('T')[0].split('-');
+          return `${d}/${m}/${y}`;
+        }
+        return dv;
+      } catch { return dv; }
+    }
+
+    function renderTable(dataArray) {
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+      if (dataArray.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="11" style="text-align:center; padding:20px;">No records</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      dataArray.forEach(item => {
+        const row = item.data;
+        const originalIdx = item.originalIndex;
+        const uniqueNit = row[1] ?? '';
+        const nit = row[2] ?? '';
+        const sl = row[3] ?? '';
+        const nitDate = formatDateToDDMMYYYY(row[4]);
+        const vendor = row[5] ?? '';
+        const workName = row[6] ?? '';
+        const fund = row[7] ?? '';
+        const estimate = row[10] ?? '';
+        const bidAmount = row[22] ?? '';  // Using Bid Amount from col AD (index 29 in sheet, index 22 in mapped data)
+
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-unique-nit', uniqueNit);
+        tr.setAttribute('data-vendor', vendor);
+        tr.setAttribute('data-row-idx', originalIdx);
+
+        // Timestamp
+        tr.appendChild(createCell(formatDateToDDMMYYYY(row[0])));
+        
+        // UNIQUE NIT as hyperlink
+        const tdNitLink = document.createElement('td');
+        const link = document.createElement('a');
+        link.href = "#";
+        link.textContent = uniqueNit || '(blank)';
+        link.onclick = (e) => { e.preventDefault(); openModalForNit(uniqueNit); };
+        tdNitLink.appendChild(link);
+        tr.appendChild(tdNitLink);
+
+        // NIT, SL, NIT DATE, VENDOR (non-editable)
+        tr.appendChild(createCell(nit));
+        tr.appendChild(createCell(sl));
+        tr.appendChild(createCell(nitDate));
+        tr.appendChild(createCell(vendor));
+        tr.appendChild(createCell(workName));
+        tr.appendChild(createCell(fund));
+        tr.appendChild(createCell(estimate));
+
+        // BID AMOUNT editable
+        const td10 = document.createElement('td');
+        td10.innerHTML = `<input type="number" step="0.01" value="${bidAmount}" id="bid_${originalIdx}" oninput="toggleMainBtn(${originalIdx})">`;
+        tr.appendChild(td10);
+
+        // Action button
+        const td11 = document.createElement('td');
+        td11.innerHTML = `<button class="action-btn" id="btn_${originalIdx}" onclick="updateSingleBid(${originalIdx})">SAVE</button>`;
+        tr.appendChild(td11);
+
+        tbody.appendChild(tr);
+        toggleMainBtn(originalIdx);
+      });
+    }
+
+    function createCell(text) {
+      const td = document.createElement('td');
+      td.textContent = text ?? '';
+      return td;
+    }
+
+    function toggleMainBtn(i) {
+      const btn = document.getElementById(`btn_${i}`);
+      if (btn) { btn.textContent = "UPDATE"; btn.style.background = "#0d6efd"; }
+    }
+
+    // Filter
+    function filterTable() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = tableData.filter(item => {
+        const r = item.data;
+        return (r[1] && r[1].toString().toLowerCase().includes(search)) ||
+               (r[2] && r[2].toString().toLowerCase().includes(search)) ||
+               (r[5] && r[5].toString().toLowerCase().includes(search));
+      });
+      renderTable(filtered);
+    }
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2000);
+    }
+
+    // ---- MODAL FUNCTIONS ----
+    function openModalForNit(uniqueNit) {
+      if (!uniqueNit) return;
+      currentModalUniqueNit = uniqueNit;
+
+      // Gather all rows with this UNIQUE NIT
+      const matchingItems = tableData.filter(item => String(item.data[1]) === String(uniqueNit));
+      if (matchingItems.length === 0) {
+        showMessage("No vendors for this NIT", "error");
+        return;
+      }
+
+      // Use first row to get scheme/fund details (they should be same)
+      const first = matchingItems[0].data;
+      const workName = first[6] ?? '';
+      const fund = first[7] ?? '';
+      const estimate = first[10] ?? '';
+      const nitNo = first[2] ?? '';
+      const nitDate = formatDateToDDMMYYYY(first[4]);
+
+      // Build vendor list for modal
+      modalVendorRows = matchingItems.map(item => {
+        return {
+          vendor: item.data[5] ?? '',
+          bidAmount: item.data[22] ?? '',  // Changed from 11 to 22
+          rowIndex: item.originalIndex,
+          originalRow: item.data
+        };
+      });
+
+      // Render modal body
+      const modalBody = document.getElementById('modalBody');
+      let html = `
+        <div class="nit-summary">
+          <div class="summary-item"><strong>UNIQUE NIT:</strong> <span>${uniqueNit}</span></div>
+          <div class="summary-item"><strong>NIT No.:</strong> <span>${nitNo}</span></div>
+          <div class="summary-item"><strong>NIT Date:</strong> <span>${nitDate}</span></div>
+          <div class="summary-item"><strong>Estimate:</strong> <span>₹${estimate}</span></div>
+          <div class="summary-item" style="flex:1 1 100%;"><strong>Work:</strong> <span>${workName}</span></div>
+          <div class="summary-item" style="flex:1 1 100%;"><strong>Fund:</strong> <span>${fund}</span></div>
+        </div>
+        <table class="vendor-table" id="modalVendorTable">
+          <thead><tr><th>VENDOR</th><th>BID AMOUNT (₹)</th><th>Action</th></tr></thead>
+          <tbody>
+      `;
+
+      modalVendorRows.forEach((v, idx) => {
+        html += `<tr id="modal-row-${v.rowIndex}">
+          <td>${v.vendor}</td>
+          <td><input type="number" step="0.01" value="${v.bidAmount}" id="modalBid_${v.rowIndex}" oninput="markModalRowChanged(${v.rowIndex})" /></td>
+          <td><button class="action-btn" id="modalBtn_${v.rowIndex}" onclick="updateSingleBidFromModal(${v.rowIndex})">UPDATE</button></td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      modalBody.innerHTML = html;
+      document.getElementById('nitModal').style.display = 'flex';
+    }
+
+    // mark row as changed (visually)
+    function markModalRowChanged(rowIdx) {
+      const btn = document.getElementById(`modalBtn_${rowIdx}`);
+      if (btn) {
+        btn.textContent = "UPDATE";
+        btn.style.background = "#0d6efd";
+      }
+    }
+
+    // update one vendor from modal
+    async function updateSingleBidFromModal(rowIdx) {
+      const btn = document.getElementById(`modalBtn_${rowIdx}`);
+      const input = document.getElementById(`modalBid_${rowIdx}`);
+      if (!btn || !input) return;
+
+      const newBid = input.value;
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        const item = tableData.find(it => it.originalIndex === rowIdx);
+        if (!item) throw new Error("row not found");
+        const row = item.data;
+        const uniqueNit = row[1];
+        const vendor = row[5];
+
+        const formData = new FormData();
+        formData.append("action", "updateBillPayment");
+        formData.append("uniqueNit", String(uniqueNit));
+        formData.append("vendor", String(vendor));
+        formData.append("col11", newBid);   // bid amount sent as col11
+
+        const res = await fetch(scriptURL, { method: "POST", body: formData });
+        const result = await res.json();
+
+        if (result.success) {
+          btn.textContent = "Saved ✔";
+          btn.style.background = "green";
+          row[22] = newBid;   // update local at index 22
+          // also update main table input if exists
+          const mainInput = document.getElementById(`bid_${rowIdx}`);
+          if (mainInput) mainInput.value = newBid;
+          
+          // Show toast and close modal after 1 second
+          showToast('Bid amount saved successfully!');
+          setTimeout(() => {
+            closeModal();
+          }, 1000);
+        } else {
+          throw new Error(result.error || "update failed");
+        }
+      } catch (err) {
+        btn.textContent = "Error";
+        btn.style.background = "red";
+        showMessage(err.message, "error");
+        btn.disabled = false;
+      }
+    }
+
+    // update all changed rows in modal
+    async function updateAllVendorBids() {
+      const updateBtn = document.getElementById('modalUpdateAllBtn');
+      const originalText = updateBtn.textContent;
+      updateBtn.textContent = "Updating...";
+      updateBtn.disabled = true;
+
+      let successCount = 0;
+      let errorCount = 0;
+      let hasChanges = false;
+
+      for (const v of modalVendorRows) {
+        const rowIdx = v.rowIndex;
+        const input = document.getElementById(`modalBid_${rowIdx}`);
+        if (!input) continue;
+        const newVal = input.value;
+        const oldVal = v.bidAmount;
+        if (newVal !== oldVal) { // changed
+          hasChanges = true;
+          try {
+            const item = tableData.find(it => it.originalIndex === rowIdx);
+            if (!item) continue;
+            const row = item.data;
+            const formData = new FormData();
+            formData.append("action", "updateBillPayment");
+            formData.append("uniqueNit", String(row[1]));
+            formData.append("vendor", String(row[5]));
+            formData.append("col11", newVal);
+
+            const res = await fetch(scriptURL, { method: "POST", body: formData });
+            const result = await res.json();
+            if (result.success) {
+              row[22] = newVal;  // local update at index 22
+              // update main input
+              const mainInp = document.getElementById(`bid_${rowIdx}`);
+              if (mainInp) mainInp.value = newVal;
+              // mark modal row updated
+              const btn = document.getElementById(`modalBtn_${rowIdx}`);
+              if (btn) { btn.textContent = "Saved ✔"; btn.style.background = "green"; }
+              successCount++;
+            } else {
+              errorCount++;
+            }
+          } catch {
+            errorCount++;
+          }
+        }
+      }
+
+      updateBtn.textContent = originalText;
+      updateBtn.disabled = false;
+      
+      if (hasChanges) {
+        showToast(`${successCount} bid${successCount !== 1 ? 's' : ''} updated successfully!`);
+        setTimeout(() => {
+          closeModal();
+        }, 1500);
+      } else {
+        showToast('No changes detected', 'info');
+        setTimeout(() => {
+          closeModal();
+        }, 1000);
+      }
+    }
+
+    // standalone update from main table
+    async function updateSingleBid(originalIdx) {
+      const btn = document.getElementById(`btn_${originalIdx}`);
+      if (!btn) return;
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+
+      try {
+        const item = tableData.find(it => it.originalIndex === originalIdx);
+        if (!item) throw new Error("no row");
+        const row = item.data;
+        const uniqueNit = row[1];
+        const vendor = row[5];
+        const bidInput = document.getElementById(`bid_${originalIdx}`);
+        const newBid = bidInput ? bidInput.value : '';
+
+        const formData = new FormData();
+        formData.append("action", "updateBillPayment");
+        formData.append("uniqueNit", String(uniqueNit));
+        formData.append("vendor", String(vendor));
+        formData.append("col11", newBid);
+
+        const res = await fetch(scriptURL, { method: "POST", body: formData });
+        const result = await res.json();
+
+        if (result.success) {
+          btn.textContent = "Saved ✔";
+          btn.style.background = "green";
+          row[22] = newBid;  // Update local at index 22
+          showToast('Bid amount saved successfully!');
+          setTimeout(() => toggleMainBtn(originalIdx), 1500);
+        } else {
+          throw new Error(result.error || "update failed");
+        }
+      } catch (err) {
+        btn.textContent = "Error";
+        btn.style.background = "red";
+        showMessage(err.message, "error");
+        btn.disabled = false;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('nitModal').style.display = 'none';
+    }
+
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = type;
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 3000);
+    }
+
+    // initial load
+    loadData();
+  </script>
+</body>
+</html>

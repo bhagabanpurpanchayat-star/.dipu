@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gram Sansad · round time · export fixed</title>
+    <title>Gram Sansad · ROUND TIMES · EXPORT FIXED</title>
     <style>
         * {
             box-sizing: border-box;
@@ -24,7 +24,7 @@
             box-shadow: 0 10px 30px rgba(0, 40, 20, 0.12);
         }
 
-        /* ----- CENTRED OFFICE HEADER ----- */
+        /* OFFICE HEADER */
         .office-header {
             text-align: center;
             margin-bottom: 25px;
@@ -237,7 +237,7 @@
 <body>
 <div class="container" id="appContainer">
 
-    <!-- OFFICE HEADER (exact) -->
+    <!-- OFFICE HEADER -->
     <div class="office-header">
         <div class="line1">Office of the</div>
         <div class="line2">BHAGABANPUR GRAM PANCHAYAT</div>
@@ -246,7 +246,7 @@
 
     <h1>
         📋 ग्राम संसद · round time
-        <small>2, 2.30, 3, 3.30 … export includes data</small>
+        <small>2, 2.30, 3, 3.30 PM only</small>
     </h1>
 
     <div class="control-panel">
@@ -266,7 +266,7 @@
             <label>⏱️ TO TIME</label>
             <input type="time" id="toTime" value="16:30">
         </div>
-        <button class="generate-btn" id="generateRandom">✨ randomize dates & round times</button>
+        <button class="generate-btn" id="generateRandom">✨ randomize round times</button>
     </div>
 
     <div class="table-wrapper">
@@ -289,10 +289,10 @@
 
     <div class="action-buttons">
         <button class="print-btn" id="printTable">🖨️ Print</button>
-        <button class="export-btn" id="exportDoc">📄 Export .doc (with data)</button>
+        <button class="export-btn" id="exportDoc">📄 Export .doc (COMPLETE DATA)</button>
     </div>
     <div class="footnote">
-        ✅ Times are round: 2 PM, 2.30 PM, 3 PM … (half hour increments). Export now preserves all edits.
+        ✅ Times: 2 PM, 2.30 PM, 3 PM, 3.30 PM, 4 PM only. Export now shows ALL data.
     </div>
 </div>
 
@@ -323,7 +323,16 @@
 
     const tbody = document.getElementById('tableBody');
 
-    // initial render with hardcoded dates and "2 P.M" (but we will change to PM style)
+    // Function to get current date in dd/mm/yyyy format
+    function getCurrentDate() {
+        const today = new Date();
+        const d = String(today.getDate()).padStart(2, '0');
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const y = today.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    // Initial render with original dates
     function renderInitial() {
         let html = '';
         baseRows.forEach((r, idx) => {
@@ -349,87 +358,115 @@
             else if (idx+1 === 19) initDate = '17/06/2025';
             else if (idx+1 === 20) initDate = '17/06/2025';
 
-            html += `<tr>
+            html += `<tr data-index="${idx}">
                 <td>${r.slno}</td>
                 <td>${r.gramName}</td>
                 <td>${r.seat}</td>
                 <td>${r.area}</td>
                 <td class="member-cell">${r.member}</td>
-                <td><input type="text" class="editable-place" value="${r.place.replace(/"/g, '&quot;')}"></td>
-                <td><input type="text" class="editable-date" value="${initDate}"></td>
-                <td><input type="text" class="editable-time" value="2 PM"></td>
+                <td><input type="text" class="editable-place" value="${r.place.replace(/"/g, '&quot;')}" onchange="updateData(${idx}, 'place', this.value)"></td>
+                <td><input type="text" class="editable-date" value="${initDate}" onchange="updateData(${idx}, 'date', this.value)"></td>
+                <td><input type="text" class="editable-time" value="2 PM" onchange="updateData(${idx}, 'time', this.value)"></td>
             </tr>`;
         });
         tbody.innerHTML = html;
     }
+    
     renderInitial();
 
-    // ----- random date (dd/mm/yyyy) -----
-    function getRandomDate(fromStr, toStr) {
-        const start = new Date(fromStr + 'T00:00:00');
-        const end = new Date(toStr + 'T00:00:00');
-        if (start > end) return null;
-        const diff = end.getTime() - start.getTime();
-        const rand = new Date(start.getTime() + Math.random() * diff);
-        const d = String(rand.getDate()).padStart(2,'0');
-        const m = String(rand.getMonth()+1).padStart(2,'0');
-        const y = rand.getFullYear();
-        return `${d}/${m}/${y}`;
+    // Store current values
+    let currentData = [];
+    for(let i = 0; i < baseRows.length; i++) {
+        currentData.push({
+            place: baseRows[i].place,
+            date: i < 3 ? '09/06/2025' : i < 6 ? '10/06/2025' : i < 9 ? '11/06/2025' : i < 12 ? '12/06/2025' : i < 15 ? '13/06/2025' : i < 18 ? '16/06/2025' : '17/06/2025',
+            time: '2 PM'
+        });
     }
 
-    // ----- random ROUND time (only on the hour or half-hour) -----
+    // Update function
+    window.updateData = function(index, field, value) {
+        if(!currentData[index]) currentData[index] = {};
+        currentData[index][field] = value;
+    };
+
+    // Get all current values from DOM
+    function refreshCurrentData() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach((row, idx) => {
+            if(!currentData[idx]) currentData[idx] = {};
+            const placeInput = row.querySelector('.editable-place');
+            const dateInput = row.querySelector('.editable-date');
+            const timeInput = row.querySelector('.editable-time');
+            
+            if(placeInput) currentData[idx].place = placeInput.value;
+            if(dateInput) currentData[idx].date = dateInput.value;
+            if(timeInput) currentData[idx].time = timeInput.value;
+        });
+    }
+
+    // Round time generator (only :00 or :30)
     function getRandomRoundTime(fromTime, toTime) {
         const [fh, fm] = fromTime.split(':').map(Number);
         const [th, tm] = toTime.split(':').map(Number);
-        let fromMin = fh*60 + fm;
-        let toMin = th*60 + tm;
-
-        // round fromMin DOWN to nearest 0 or 30? better: include all half-hour steps between from and to.
-        // generate list of allowed minutes (multiples of 30) between fromMin and toMin inclusive.
-        let allowed = [];
-        let current = Math.ceil(fromMin / 30) * 30;  // next 30-min mark after fromMin
-        // but also include fromMin if it is exactly on a half-hour boundary? we allow if fromMin %30 ===0
-        if (fromMin % 30 === 0) allowed.push(fromMin);
-        while (current <= toMin) {
-            allowed.push(current);
-            current += 30;
+        
+        let fromMin = fh * 60 + fm;
+        let toMin = th * 60 + tm;
+        
+        // Generate only :00 and :30 times
+        const possibleTimes = [];
+        
+        // Round up fromMin to nearest :00 or :30
+        let startMin = Math.ceil(fromMin / 30) * 30;
+        
+        // Add all :00 and :30 times between startMin and toMin
+        for(let mins = startMin; mins <= toMin; mins += 30) {
+            possibleTimes.push(mins);
         }
-
-        if (allowed.length === 0) {
-            // fallback: nearest half hour
-            let approx = Math.round((fromMin + toMin) / 60 / 0.5) * 30;
-            allowed = [Math.min(toMin, Math.max(fromMin, approx))];
+        
+        // If no times, use fromMin rounded to nearest 30
+        if(possibleTimes.length === 0) {
+            let fallback = Math.round(fromMin / 30) * 30;
+            if(fallback < fromMin) fallback += 30;
+            if(fallback > toMin) fallback = toMin;
+            possibleTimes.push(fallback);
         }
-
-        const randMin = allowed[Math.floor(Math.random() * allowed.length)];
-        const h24 = Math.floor(randMin / 60);
-        const minute = randMin % 60;
-
-        const period = h24 >= 12 ? 'PM' : 'AM';
-        let h12 = h24 % 12;
-        if (h12 === 0) h12 = 12;
-
-        if (minute === 0) {
-            return `${h12} ${period}`;
+        
+        const selectedMins = possibleTimes[Math.floor(Math.random() * possibleTimes.length)];
+        const hours24 = Math.floor(selectedMins / 60);
+        const minutes = selectedMins % 60;
+        const period = hours24 >= 12 ? 'PM' : 'AM';
+        let hours12 = hours24 % 12;
+        if(hours12 === 0) hours12 = 12;
+        
+        if(minutes === 0) {
+            return `${hours12} ${period}`;
         } else {
-            // minute will always be 30 because we only push multiples of 30
-            return `${h12}.${minute} ${period}`;   // e.g., "2.30 PM"
+            return `${hours12}.${minutes} ${period}`;
         }
     }
 
-    // randomize button
+    // Random date generator
+    function getRandomDate(fromStr, toStr) {
+        const start = new Date(fromStr + 'T12:00:00');
+        const end = new Date(toStr + 'T12:00:00');
+        const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
+        const randomDate = new Date(randomTime);
+        const d = String(randomDate.getDate()).padStart(2, '0');
+        const m = String(randomDate.getMonth() + 1).padStart(2, '0');
+        const y = randomDate.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    // Randomize button
     document.getElementById('generateRandom').addEventListener('click', function() {
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
         const fromTime = document.getElementById('fromTime').value;
         const toTime = document.getElementById('toTime').value;
 
-        if (!fromDate || !toDate || !fromTime || !toTime) {
-            alert('Please fill all date/time ranges.');
-            return;
-        }
-        if (fromDate > toDate) {
-            alert('From date must be ≤ To date');
+        if(!fromDate || !toDate || !fromTime || !toTime) {
+            alert('Please fill all fields');
             return;
         }
 
@@ -437,65 +474,106 @@
         rows.forEach(row => {
             const dateInput = row.querySelector('.editable-date');
             const timeInput = row.querySelector('.editable-time');
-            if (dateInput && timeInput) {
-                const newDate = getRandomDate(fromDate, toDate);
-                if (newDate) dateInput.value = newDate;
+            
+            if(dateInput && timeInput) {
+                dateInput.value = getRandomDate(fromDate, toDate);
                 timeInput.value = getRandomRoundTime(fromTime, toTime);
+                
+                // Trigger change event
+                const event = new Event('change', { bubbles: true });
+                dateInput.dispatchEvent(event);
+                timeInput.dispatchEvent(event);
             }
         });
+        
+        refreshCurrentData();
     });
 
     // Print
     document.getElementById('printTable').addEventListener('click', () => window.print());
 
-    // ---------------- FIXED EXPORT (preserves every input) ----------------
+    // SIMPLE, FOOLPROOF EXPORT
     document.getElementById('exportDoc').addEventListener('click', function() {
-        // grab current LIVE table
-        const liveTable = document.getElementById('gramTable');
-        // deep clone
-        const cloneTable = liveTable.cloneNode(true);
-
-        // force all current input values into the clone's value attributes
-        const liveInputs = liveTable.querySelectorAll('input');
-        const cloneInputs = cloneTable.querySelectorAll('input');
-        for (let i = 0; i < liveInputs.length; i++) {
-            // set attribute 'value' to the live value (so it shows in Word)
-            cloneInputs[i].setAttribute('value', liveInputs[i].value);
-            // also set innerHTML for safety (some editors)
-            cloneInputs[i].innerHTML = liveInputs[i].value;
-        }
-
-        // get office header html
+        // Get fresh data from DOM
+        refreshCurrentData();
+        
+        // Get header
         const headerHtml = document.querySelector('.office-header').outerHTML;
+        
+        // Build table with PLAIN TEXT, no inputs
+        let tableRows = '';
+        const rows = document.querySelectorAll('#tableBody tr');
+        
+        rows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            const slno = cells[0].innerText;
+            const gramName = cells[1].innerText;
+            const seat = cells[2].innerText;
+            const area = cells[3].innerText;
+            const member = cells[4].innerText;
+            
+            // Get values from currentData (which we refreshed)
+            const place = currentData[index]?.place || cells[5].querySelector('input')?.value || '';
+            const date = currentData[index]?.date || cells[6].querySelector('input')?.value || '';
+            const time = currentData[index]?.time || cells[7].querySelector('input')?.value || '';
+            
+            tableRows += `
+                <tr>
+                    <td style="border: 1px solid black; padding: 5px;">${slno}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${gramName}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${seat}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${area}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${member}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${place}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${date}</td>
+                    <td style="border: 1px solid black; padding: 5px;">${time}</td>
+                </tr>
+            `;
+        });
 
-        // style for export (clean, includes header)
-        const exportStyles = `
-            <style>
-                body { padding: 30px; font-family: 'Segoe UI', Arial, sans-serif; }
-                .office-header { text-align: center; margin-bottom: 25px; }
-                .office-header .line1 { font-size: 1.6rem; font-weight: 600; color: #04362b; text-transform: uppercase; }
-                .office-header .line2 { font-size: 1.2rem; font-weight: 500; color: #1b5f4d; }
-                .office-header .line3 { font-size: 1rem; color: #2e7a65; }
-                table { border-collapse: collapse; width: 100%; font-size: 11pt; }
-                th { background: #c0e2d6; padding: 8px; border: 1px solid #0d4236; }
-                td { border: 1px solid #246454; padding: 6px; vertical-align: top; }
-                .editable-place, .editable-date, .editable-time { border: 1px solid #2b8369; background: #f9fdfb; padding: 5px; width: 95%; }
-                .member-cell { font-weight: 500; }
-                .control-panel, .action-buttons, .generate-btn, .footnote, h1 { display: none; }
-            </style>
+        const tableHTML = `
+            <table style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 11pt;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">SL NO</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">NAME GRAM SANSAD & No</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Gram Panchayat Seat</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Area</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Member</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Meeting Place</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Date</th>
+                        <th style="border: 1px solid black; padding: 8px; background: #c0e2d6;">Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
         `;
 
-        const fullHtml = `<!DOCTYPE html>
+        // Complete HTML document
+        const fullHTML = `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Gram Sansad Schedule (with data)</title>${exportStyles}</head>
+<head>
+    <meta charset="UTF-8">
+    <title>Gram Sansad Meeting Schedule</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .office-header { text-align: center; margin-bottom: 30px; }
+        .office-header .line1 { font-size: 24px; font-weight: bold; color: #04362b; }
+        .office-header .line2 { font-size: 20px; color: #1b5f4d; }
+        .office-header .line3 { font-size: 16px; color: #2e7a65; }
+    </style>
+</head>
 <body>
-${headerHtml}
-${cloneTable.outerHTML}
-<p style="margin-top:20px;"><em>generated by Gram Sansad scheduler – all round times & edits preserved</em></p>
+    ${headerHtml}
+    ${tableHTML}
+    <p style="margin-top: 20px; font-style: italic;">Generated on ${new Date().toLocaleString()}</p>
 </body>
 </html>`;
 
-        const blob = new Blob([fullHtml], { type: 'application/msword' });
+        // Download
+        const blob = new Blob([fullHTML], { type: 'application/msword' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'gram_sansad_schedule.doc';

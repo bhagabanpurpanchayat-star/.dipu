@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মিটিং ম্যানেজমেন্ট · গুগল শিট সংযোগ</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #a5bed9;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 15px 15px 30px 15px;
+            font-family: 'Noto Sans Bengali', 'Segoe UI', 'Times New Roman', serif;
+        }
+        .app-wrapper {
+            max-width: 1500px;
+            width: 100%;
+            background: #e2ecf7;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 20, 40, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .system-title {
+            background: #08355c;
+            color: white;
+            padding: 0.8rem 2rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 3px solid #ffc107;
+            text-align: center;
+        }
+        .system-title span {
+            font-size: 0.9rem;
+            background: #306998;
+            padding: 0.2rem 1.2rem;
+            border-radius: 40px;
+            margin-left: 15px;
+        }
+
+        /* তিন কলাম ইনপুট */
+        .three-col {
+            display: flex;
+            flex-wrap: wrap;
+            background: #e9f2fc;
+            border-bottom: 3px solid #9cb9d7;
+            flex-shrink: 0;
+        }
+        .col {
+            padding: 1rem 0.9rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .col-left {
+            flex: 2 1 250px;
+            min-width: 230px;
+            border-right: 2px dashed #8aa7cc;
+        }
+        .col-middle {
+            flex: 2.2 1 280px;
+            min-width: 250px;
+            border-right: 2px dashed #8aa7cc;
+            background: #deecfa;
+        }
+        .col-right {
+            flex: 2 1 250px;
+            min-width: 230px;
+            background: #d7e6fb;
+        }
+        .col-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #08355c;
+            margin-bottom: 0.7rem;
+        }
+        .col-title span {
+            background: #1b5385;
+            color: white;
+            padding: 0.1rem 1rem;
+            border-radius: 30px;
+            font-size: 0.6rem;
+        }
+
+        .field-sm {
+            margin-bottom: 0.6rem;
+        }
+        .field-sm label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #123f67;
+            display: block;
+        }
+        .field-sm input, .field-sm select {
+            width: 100%;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid #7f9fc7;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            background: white;
+        }
+        .inline-duo {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* চেকবক্স */
+        .checkbox-scroll {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #8daacd;
+            border-radius: 16px;
+            padding: 5px 6px;
+            background: #f6faff;
+            margin-bottom: 6px;
+        }
+        .member-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            padding: 3px 0;
+            border-bottom: 1px dashed #c4d4ec;
+        }
+        .member-row input {
+            width: 14px;
+            height: 14px;
+            accent-color: #1b5589;
+        }
+        .selected-list {
+            background: #dde9f7;
+            border-radius: 16px;
+            padding: 6px 8px;
+            border: 1px solid #5f8fc0;
+        }
+        .selected-list .mini-title {
+            font-weight: 700;
+            font-size: 0.65rem;
+            color: #0c345a;
+        }
+        .selected-names {
+            max-height: 70px;
+            overflow-y: auto;
+            font-size: 0.6rem;
+        }
+        .selected-names span {
+            display: block;
+            border-bottom: 1px dashed #acc6e3;
+            padding: 2px 0;
+        }
+
+        /* এজেন্ডা ডায়নামিক */
+        .agenda-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 8px 0;
+        }
+        .ag-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ag-row .num {
+            background: #275d91;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .ag-row input {
+            flex: 1;
+            padding: 0.3rem 0.9rem;
+            border: 1px solid #4e81b5;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            background: white;
+        }
+        .ag-note {
+            font-size: 0.55rem;
+            color: #1d4875;
+        }
+
+        /* বাটন গ্রুপ */
+        .button-row {
+            background: #e9f2fc;
+            padding: 0.7rem 2rem 1rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .gen-btn, .pdf-btn, .doc-btn, .save-btn, .view-btn, .update-btn, .close-btn {
+            border: none;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px #0f3552;
+            cursor: pointer;
+            border: 1px solid #598ac2;
+        }
+        .gen-btn { background: #114977; }
+        .pdf-btn { background: #a03535; }
+        .doc-btn { background: #2f6b2f; }
+        .save-btn { background: #1f7a7a; }
+        .view-btn { background: #9d6b1f; }
+        .update-btn { background: #2a7a4d; }
+        .close-btn { background: #7a3e3e; }
+
+        /* প্রিন্ট প্রিভিউ (স্ক্রোল) */
+        .print-area {
+            background: #c8d9f0;
+            padding: 20px 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            border-top: 3px solid #6f8db0;
+        }
+        .member-page {
+            width: 100%;
+            max-width: 1100px;
+            background: white;
+            border-radius: 24px;
+            padding: 18px 15px;
+            box-shadow: 0 8px 20px rgba(0, 25, 45, 0.5);
+            page-break-after: always;
+            margin: 0 auto;
+        }
+        .double-letter {
+            display: flex;
+            background: #fefefc;
+            border: none;
+        }
+        .letter-half {
+            flex: 1 1 45%;
+            padding: 0.7rem 0.7rem;
+            font-size: 0.6rem;
+            line-height: 1.4;
+            background: white;
+        }
+        .vertical-dotted {
+            flex: 0 0 2px;
+            border-left: 2px dotted #4a6f8f;
+            height: auto;
+            margin: 5px 0;
+        }
+        .format-letter {
+            white-space: pre-line;
+        }
+        .center { text-align: center; }
+        .bold { font-weight: 700; }
+        .dotted-line { border-top: 1px dashed #2a2a2a; margin: 4px 0; }
+        .signature-line { display: flex; justify-content: space-between; margin-top: 10px; }
+        .copy-badge {
+            background: #1b5385; color: white; padding: 0.1rem 0.9rem; border-radius: 20px;
+            font-size: 0.45rem; display: inline-block; margin-bottom: 3px;
+        }
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 2px 0;
+        }
+        .agenda-icon {
+            font-size: 0.7rem;
+            background: #275d91;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* পূর্ববর্তী সভা টেবিল */
+        .previous-meetings {
+            background: white;
+            margin: 15px 20px;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: inset 0 2px 8px #b0c7df;
+            max-height: 400px;
+            overflow: auto;
+            border: 2px solid #1b5385;
+        }
+        .prev-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .prev-header h3 {
+            color: #08355c;
+            font-size: 1rem;
+        }
+        .close-prev-btn {
+            background: #a03535;
+            color: white;
+            border: none;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+        }
+        th {
+            background: #1b5385;
+            color: white;
+            padding: 8px;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            border: 1px solid #acc6e3;
+            padding: 6px;
+        }
+        .action-icons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .action-icons i {
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .fa-eye { color: #1f7a7a; }
+        .fa-edit { color: #b36b1e; }
+        .fa-trash-alt { color: #b33b3b; }
+        .fa-eye:hover { color: #0a4c4c; }
+        .fa-edit:hover { color: #8e4f0e; }
+        .fa-trash-alt:hover { color: #8f2a2a; }
+
+        /* লোডার */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #08355c;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="system-title">
+        📋 মিটিং ম্যানেজমেন্ট সিস্টেম <span>গুগল শিট সংযোগ</span>
+    </div>
+
+    <!-- তিন কলাম ইনপুট -->
+    <div class="three-col">
+        <div class="col col-left">
+            <div class="col-title"><span>📅</span> সভার বিবরণ</div>
+            <div class="field-sm"><label>📆 পত্র ইস্যুর তারিখ</label><input type="date" id="issueDate" value="2026-09-01"></div>
+            <div class="field-sm"><label>📅 সভার তারিখ</label><input type="date" id="meetingDate" value="2026-09-10"></div>
+            <div class="field-sm"><label>⏰ সভার সময়</label><input type="text" id="meetingTime" value="বিকাল ৪:০০"></div>
+            <div class="field-sm"><label>📌 দিন (স্বয়ংক্রিয়)</label><input type="text" id="dayText" readonly></div>
+            <div class="field-sm"><label>🧩 সভার ধরন</label>
+                <select id="meetingType">
+                    <option value="সাধারণ">সাধারণ</option>
+                    <option value="কৃষি ও প্রানি সম্পদ বিকাশ" selected>কৃষি ও প্রানি</option>
+                    <option value="শিল্প ও পরিকাঠামো উপসমিতি">শিল্প ও পরিকাঠামো</option>
+                    <option value="জরুরি সাধারণ">জরুরি সাধারণ</option>
+                    <option value="অর্থ ও পরিকল্পনা উপসমিতি">অর্থ ও পরিকল্পনা</option>
+                    <option value="নারী শিশু উন্নয়ন ও সমাজ কল্যাণ উপসমিতি">নারী শিশু</option>
+                    <option value="শিক্ষা ও জন স্বাস্থ্য উপসমিতি">শিক্ষা ও স্বাস্থ্য</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col col-middle">
+            <div class="col-title"><span>✅</span> সদস্য নির্বাচন</div>
+            <div class="checkbox-scroll" id="checkboxContainer"></div>
+            <div class="selected-list">
+                <div class="mini-title">নির্বাচিত সদস্য (ক্রমিক)</div>
+                <div class="selected-names" id="selectedOrderedList">—</div>
+            </div>
+        </div>
+
+        <div class="col col-right">
+            <div class="col-title"><span>📋</span> এজেন্ডা ইনপুট</div>
+            <div class="agenda-rows" id="agendaRows"></div>
+            <div class="ag-note">★ শেষ ঘরে লিখলে নতুন সারি যোগ হয়</div>
+        </div>
+    </div>
+
+    <!-- বাটন গ্রুপ (ডিফল্ট) -->
+    <div class="button-row" id="defaultButtons">
+        <button class="gen-btn" id="generateBtn">🖨️ জেনারেট</button>
+        <button class="save-btn" id="saveSheetBtn">💾 সেভ</button>
+        <button class="view-btn" id="viewPrevBtn">📋 পূর্ববর্তী সভা দেখুন</button>
+        <button class="pdf-btn" id="exportPdfBtn">📕 PDF</button>
+        <button class="doc-btn" id="exportDocBtn">📄 DOC</button>
+    </div>
+
+    <!-- এডিট মোড বাটন (আপডেট + ক্লোজ) -->
+    <div class="button-row" id="editModeButtons" style="display: none;">
+        <button class="update-btn" id="updateBtn">🔄 আপডেট</button>
+        <button class="close-btn" id="closeEditBtn">✖️ ক্লোজ</button>
+    </div>
+
+    <!-- লোডার -->
+    <div id="loader" style="display: none; text-align: center;"><div class="loader"></div></div>
+
+    <!-- পূর্ববর্তী সভা টেবিল -->
+    <div id="previousMeetingsPanel" class="previous-meetings" style="display: none;">
+        <div class="prev-header">
+            <h3>📋 পূর্ববর্তী সভার তালিকা</h3>
+            <button class="close-prev-btn" id="closePrevBtn">বন্ধ করুন</button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table id="prevMeetingTable">
+                <thead>
+                    <tr>
+                        <th>SL NO</th>
+                        <th>DATE OF MEETING</th>
+                        <th>MEETING TIME</th>
+                        <th>LETTER ISSUE DATE</th>
+                        <th>MEETING TYPE</th>
+                        <th>AGENDA</th>
+                        <th>RECIPIENT</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="prevTableBody">
+                    <tr><td colspan="8" style="text-align:center;">লোড হচ্ছে...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- প্রিন্ট প্রিভিউ -->
+    <div class="print-area" id="printPreview"></div>
+</div>
+
+<script>
+    (function() {
+        // ---------- আপনার গুগল শিট ওয়েব অ্যাপ URL ----------
+        const SHEET_WEBAPP_URL = 'YOUR_WEBAPP_URL_HERE'; // আপনার ডিপ্লয় করা URL বসান
+        
+        // ---------- ডেটা ও এলিমেন্ট ----------
+        const issueDate = document.getElementById('issueDate');
+        const meetingDate = document.getElementById('meetingDate');
+        const meetingTime = document.getElementById('meetingTime');
+        const dayText = document.getElementById('dayText');
+        const meetingType = document.getElementById('meetingType');
+        const checkboxContainer = document.getElementById('checkboxContainer');
+        const selectedOrderedList = document.getElementById('selectedOrderedList');
+        const agendaRowsDiv = document.getElementById('agendaRows');
+        
+        const generateBtn = document.getElementById('generateBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const exportDocBtn = document.getElementById('exportDocBtn');
+        const saveSheetBtn = document.getElementById('saveSheetBtn');
+        const viewPrevBtn = document.getElementById('viewPrevBtn');
+        const closePrevBtn = document.getElementById('closePrevBtn');
+        const updateBtn = document.getElementById('updateBtn');
+        const closeEditBtn = document.getElementById('closeEditBtn');
+        const defaultButtons = document.getElementById('defaultButtons');
+        const editModeButtons = document.getElementById('editModeButtons');
+        const loader = document.getElementById('loader');
+        
+        const printPreview = document.getElementById('printPreview');
+        const prevPanel = document.getElementById('previousMeetingsPanel');
+        const prevTableBody = document.getElementById('prevTableBody');
+
+        let currentEditIndex = null;
+        let meetingsData = [];
+
+        const memberList = [
+            "FENSHI KHATUN","REJAUL KARIM","NARGIS KHATUN","KESHOMATI BARMAN","ALO MAHALDAR",
+            "TAJMIRA YEASMIN","ANTARA KHATUN","ABU BAKKAR SIDDIQUE","NASIMA BANU","MD SHARIF ALI",
+            "HUSNARA KHATUN","MD AL AMIN","FERDOSHI BEGAM","INJILA","GOLAP ALI","BENEJI KHATUN",
+            "MD ATAUR RAHAMAN","KAUSARA BEGAM","AFAJUDDIN AHAMED","ZED RAHAMAN","MOUSUMI KHATUN","SYED NEAMUL HOQUE"
+        ];
+
+        // ---------- চেকবক্স ----------
+        function renderCheckboxes() {
+            let html = '';
+            memberList.forEach(name => {
+                const id = `chk_${name.replace(/\s/g,'_')}`;
+                html += `<div class="member-row"><input type="checkbox" value="${name}" id="${id}" class="memberCheck"><label for="${id}">${name}</label></div>`;
+            });
+            checkboxContainer.innerHTML = html;
+        }
+        renderCheckboxes();
+
+        function updateSelectedList() {
+            const checks = Array.from(document.querySelectorAll('.memberCheck:checked'));
+            if (!checks.length) {
+                selectedOrderedList.innerHTML = '<span>— কাউকে নয়</span>';
+                return;
+            }
+            let html = '';
+            checks.forEach((cb, idx) => { html += `<span>${idx+1}. ${cb.value}</span>`; });
+            selectedOrderedList.innerHTML = html;
+        }
+
+        // দিন স্বয়ংক্রিয়
+        function updateDayFromDate() {
+            const dateVal = meetingDate.value;
+            if (!dateVal) { dayText.value = ''; return; }
+            const parts = dateVal.split('-');
+            if (parts.length !== 3) return;
+            const d = new Date(parts[0], parts[1]-1, parts[2]);
+            if (isNaN(d)) return;
+            const weekdays = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+            dayText.value = weekdays[d.getDay()];
+        }
+        meetingDate.addEventListener('change', updateDayFromDate);
+        meetingDate.addEventListener('input', updateDayFromDate);
+        updateDayFromDate();
+
+        // ---------- এজেন্ডা ডায়নামিক ----------
+        function createAgendaRow(value = '') {
+            const row = document.createElement('div');
+            row.className = 'ag-row';
+            const num = document.createElement('span');
+            num.className = 'num';
+            row.appendChild(num);
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.placeholder = 'আলোচ্য বিষয়';
+            inp.value = value;
+            inp.addEventListener('input', function(e) { handleAgendaInput(row); });
+            row.appendChild(inp);
+            return row;
+        }
+        function renumberAgenda() {
+            const rows = Array.from(agendaRowsDiv.querySelectorAll('.ag-row'));
+            rows.forEach((r, i) => { const s = r.querySelector('.num'); if (s) s.textContent = i + 1; });
+        }
+        function handleAgendaInput(currentRow) {
+            const rows = Array.from(agendaRowsDiv.querySelectorAll('.ag-row'));
+            const lastRow = rows[rows.length - 1];
+            const lastInp = lastRow.querySelector('input');
+            if (currentRow === lastRow && lastInp.value.trim() !== '') {
+                agendaRowsDiv.appendChild(createAgendaRow(''));
+            }
+            renumberAgenda();
+        }
+        function initAgenda() {
+            agendaRowsDiv.innerHTML = '';
+            agendaRowsDiv.appendChild(createAgendaRow('বার্ষিক বাজেট আলোচনা'));
+            agendaRowsDiv.appendChild(createAgendaRow('পানীয় জল সরবরাহ'));
+            agendaRowsDiv.appendChild(createAgendaRow(''));
+            renumberAgenda();
+        }
+        initAgenda();
+
+        function getAgendaItems() {
+            return Array.from(agendaRowsDiv.querySelectorAll('.ag-row input')).map(i => i.value.trim()).filter(v => v);
+        }
+
+        function setCheckedMembersFromString(recipientStr) {
+            const names = recipientStr.split(',').map(s => s.trim());
+            document.querySelectorAll('.memberCheck').forEach(cb => {
+                cb.checked = names.includes(cb.value);
+            });
+            updateSelectedList();
+        }
+
+        function setAgendaFromString(agendaStr) {
+            const items = agendaStr.split(',').map(s => s.trim()).filter(s => s);
+            agendaRowsDiv.innerHTML = '';
+            if (items.length === 0) {
+                agendaRowsDiv.appendChild(createAgendaRow(''));
+            } else {
+                items.forEach(item => agendaRowsDiv.appendChild(createAgendaRow(item)));
+                agendaRowsDiv.appendChild(createAgendaRow(''));
+            }
+            renumberAgenda();
+        }
+
+        // প্রিন্ট ফরম্যাট
+        function formatAgendaWithIcons() {
+            const items = getAgendaItems();
+            if (!items.length) return '<div class="agenda-item"><span class="agenda-icon">•</span> কোনো এজেন্ডা নেই</div>';
+            return items.map((item, idx) => 
+                `<div class="agenda-item"><span class="agenda-icon">${idx+1}</span> ${item}</div>`
+            ).join('');
+        }
+
+        function formatDateBangla(ds) {
+            if (!ds) return '____';
+            const p = ds.split('-');
+            if (p.length !== 3) return ds;
+            const d = new Date(p[0], p[1]-1, p[2]);
+            if (isNaN(d)) return ds;
+            try { return d.toLocaleDateString('bn-BD', {day:'numeric', month:'long', year:'numeric'}); }
+            catch { return d.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}); }
+        }
+
+        function generateLetterPair(memberName) {
+            const typeVal = meetingType.value;
+            const mDate = formatDateBangla(meetingDate.value);
+            const day = dayText.value.trim() || '____';
+            const time = meetingTime.value.trim() || '____';
+            const iDate = formatDateBangla(issueDate.value);
+            const agendaHTML = formatAgendaWithIcons();
+
+            function copy(label, nameField) {
+                return `<div class="copy-badge">${label}</div><div class="format-letter">
+                    <div class="center bold">ফর্ম নং-১</div><div class="center">৫ নিয়ম দ্রষ্টব্য</div><div class="center bold">গ্রাম পঞ্চায়েতের ${typeVal} সভার নোটিশ</div>
+                    <div class="dotted-line"></div><div>প্রতি,<br>নাম- ${nameField},<br>পদ- সদস্য<br>সংসদ- ৫ নং<br>গ্রাম- উত্তরপাড়া<br>☎ মোবাইল নং- ০১৭xxxx</div>
+                    <p>মহাশয় /মহাশয়া,</p><p>এত দ্বারা আপনাকে জানানো যাইতেছে যে নিম্ন লিখিত বিষয়গুলি আলোচনা ও সিদ্ধান্ত গ্রহণের নিমিত্তে সুলতান নগর গ্রাম পঞ্চায়েতে একটি সভার আয়োজন করা হয়েছে ।</p>
+                    <p>সভার ধরন- ${typeVal}<br>সভার তাং- ${mDate}, ${day}<br>সময়- ${time}</p>
+                    <p>অতএব উক্ত দিবসে নির্ধারিত সময়ে নিম্ন লিখিত বিষয় গুলির আলোচনায় যোগদান করার জন্য আপনাকে একান্ত ভাবে অনুরোধ করিতেছে।</p>
+                    <p>আলোচ্য বিষয়-</p>${agendaHTML}
+                    <div class="signature-line"><span>তারিখ- ${iDate}</span><span>সচিব<br>সুলতান নগর গ্রাম পঞ্চায়েত</span></div>
+                </div>`;
+            }
+            return `<div class="double-letter"><div class="letter-half">${copy('🏢 অফিস কপি', memberName)}</div><div class="vertical-dotted"></div><div class="letter-half">${copy('📨 প্রাপক কপি', memberName)}</div></div>`;
+        }
+
+        function renderPrintPreview() {
+            const checks = Array.from(document.querySelectorAll('.memberCheck:checked'));
+            if (!checks.length) {
+                printPreview.innerHTML = '<div style="background:#f8e8dd; padding:20px;">⚠️ সদস্য নির্বাচন করুন</div>';
+                return;
+            }
+            let pages = '';
+            checks.forEach((cb) => { pages += `<div class="member-page">${generateLetterPair(cb.value)}</div>`; });
+            printPreview.innerHTML = pages;
+        }
+
+        // ---------- গুগল শিট অপারেশন (IFRAME পদ্ধতি - CORS মুক্ত) ----------
+        function fetchMeetings() {
+            return new Promise((resolve) => {
+                if (!SHEET_WEBAPP_URL || SHEET_WEBAPP_URL === 'https://script.google.com/macros/s/AKfycbyHnBPqLfoFxrtUzpkZK8xtLsHB2G_kcAm3ijuWhYQG2hPOS7db1w0j2CXzS5KnucEdBg/exec') {
+                    alert('ওয়েব অ্যাপ URL সেট করুন');
+                    resolve([]);
+                    return;
+                }
+                
+                loader.style.display = 'block';
+                
+                // একটি লুকানো iframe তৈরি করা
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                // মেসেজ হ্যান্ডলার
+                window.addEventListener('message', function handler(event) {
+                    if (event.data && event.data.type === 'meetingData') {
+                        window.removeEventListener('message', handler);
+                        document.body.removeChild(iframe);
+                        loader.style.display = 'none';
+                        
+                        if (event.data.status === 'success') {
+                            meetingsData = event.data.data || [];
+                            resolve(meetingsData);
+                        } else {
+                            console.error('Error:', event.data.message);
+                            resolve([]);
+                        }
+                    }
+                });
+                
+                // iframe এ রিকোয়েস্ট লোড করা
+                iframe.src = SHEET_WEBAPP_URL + '?action=getAll&t=' + Date.now();
+            });
+        }
+
+        function saveMeeting(action, rowIndex = null) {
+            return new Promise((resolve) => {
+                const checks = Array.from(document.querySelectorAll('.memberCheck:checked'));
+                if (!checks.length) { 
+                    alert('সদস্য নির্বাচন করুন'); 
+                    resolve(false); 
+                    return; 
+                }
+
+                const recipients = checks.map(cb => cb.value).join(', ');
+                const agendaList = getAgendaItems().join(', ');
+
+                loader.style.display = 'block';
+                
+                // iframe তৈরি
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                // URL তৈরি
+                let url = `${SHEET_WEBAPP_URL}?action=${action}`;
+                url += `&dateOfMeeting=${encodeURIComponent(meetingDate.value)}`;
+                url += `&meetingTime=${encodeURIComponent(meetingTime.value)}`;
+                url += `&letterIssueDate=${encodeURIComponent(issueDate.value)}`;
+                url += `&meetingType=${encodeURIComponent(meetingType.value)}`;
+                url += `&agenda=${encodeURIComponent(agendaList)}`;
+                url += `&recipient=${encodeURIComponent(recipients)}`;
+                if (rowIndex !== null) {
+                    url += `&rowIndex=${rowIndex}`;
+                }
+                url += `&t=${Date.now()}`;
+                
+                // মেসেজ হ্যান্ডলার
+                window.addEventListener('message', function handler(event) {
+                    if (event.data && event.data.type === 'saveResult') {
+                        window.removeEventListener('message', handler);
+                        document.body.removeChild(iframe);
+                        loader.style.display = 'none';
+                        
+                        if (event.data.status === 'success') {
+                            alert('ডেটা সফলভাবে সংরক্ষিত');
+                            resolve(true);
+                        } else {
+                            alert('ত্রুটি: ' + (event.data.message || 'অজানা ত্রুটি'));
+                            resolve(false);
+                        }
+                    }
+                });
+                
+                iframe.src = url;
+                
+                // টাইমআউট
+                setTimeout(() => {
+                    window.removeEventListener('message', handler);
+                    document.body.removeChild(iframe);
+                    loader.style.display = 'none';
+                    alert('সংযোগের সময় শেষ');
+                    resolve(false);
+                }, 10000);
+            });
+        }
+
+        function deleteMeeting(rowIndex) {
+            return new Promise((resolve) => {
+                if (!confirm('নিশ্চিতভাবে মুছবেন?')) {
+                    resolve(false);
+                    return;
+                }
+                
+                loader.style.display = 'block';
+                
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                const url = `${SHEET_WEBAPP_URL}?action=delete&rowIndex=${rowIndex}&t=${Date.now()}`;
+                
+                window.addEventListener('message', function handler(event) {
+                    if (event.data && event.data.type === 'deleteResult') {
+                        window.removeEventListener('message', handler);
+                        document.body.removeChild(iframe);
+                        loader.style.display = 'none';
+                        
+                        if (event.data.status === 'success') {
+                            alert('মুছে ফেলা হয়েছে');
+                            resolve(true);
+                        } else {
+                            alert('ত্রুটি: ' + (event.data.message || 'অজানা ত্রুটি'));
+                            resolve(false);
+                        }
+                    }
+                });
+                
+                iframe.src = url;
+                
+                setTimeout(() => {
+                    window.removeEventListener('message', handler);
+                    document.body.removeChild(iframe);
+                    loader.style.display = 'none';
+                    alert('সংযোগের সময় শেষ');
+                    resolve(false);
+                }, 10000);
+            });
+        }
+
+        async function loadPreviousMeetings() {
+            const meetings = await fetchMeetings();
+            
+            if (!meetings || meetings.length === 0) {
+                prevTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">কোনো পূর্ববর্তী সভা নেই</td></tr>';
+            } else {
+                let rows = '';
+                meetings.forEach((rec, idx) => {
+                    rows += `<tr>
+                        <td>${rec[0] || ''}</td>
+                        <td>${rec[1] || ''}</td>
+                        <td>${rec[2] || ''}</td>
+                        <td>${rec[3] || ''}</td>
+                        <td>${rec[4] || ''}</td>
+                        <td>${rec[5] || ''}</td>
+                        <td>${rec[6] || ''}</td>
+                        <td class="action-icons">
+                            <i class="fas fa-eye" title="দেখুন" onclick="window.viewMeeting(${idx})"></i>
+                            <i class="fas fa-edit" title="সম্পাদনা" onclick="window.editMeeting(${idx})"></i>
+                            <i class="fas fa-trash-alt" title="মুছুন" onclick="window.deleteMeeting(${rec[0]})"></i>
+                        </td>
+                    </tr>`;
+                });
+                prevTableBody.innerHTML = rows;
+            }
+            prevPanel.style.display = 'block';
+            printPreview.style.display = 'none';
+        }
+
+        // গ্লোবাল ফাংশন
+        window.viewMeeting = function(arrayIndex) {
+            if (!meetingsData[arrayIndex]) return;
+            const rec = meetingsData[arrayIndex];
+            issueDate.value = rec[3] || '';
+            meetingDate.value = rec[1] || '';
+            meetingTime.value = rec[2] || '';
+            meetingType.value = rec[4] || '';
+            updateDayFromDate();
+            setCheckedMembersFromString(rec[6] || '');
+            setAgendaFromString(rec[5] || '');
+
+            printPreview.style.display = 'flex';
+            renderPrintPreview();
+            prevPanel.style.display = 'none';
+            exitEditMode();
+        };
+
+        window.editMeeting = function(arrayIndex) {
+            if (!meetingsData[arrayIndex]) return;
+            const rec = meetingsData[arrayIndex];
+            issueDate.value = rec[3] || '';
+            meetingDate.value = rec[1] || '';
+            meetingTime.value = rec[2] || '';
+            meetingType.value = rec[4] || '';
+            updateDayFromDate();
+            setCheckedMembersFromString(rec[6] || '');
+            setAgendaFromString(rec[5] || '');
+
+            currentEditIndex = rec[0];
+
+            defaultButtons.style.display = 'none';
+            editModeButtons.style.display = 'flex';
+
+            prevPanel.style.display = 'none';
+            printPreview.style.display = 'flex';
+            renderPrintPreview();
+        };
+
+        window.deleteMeeting = async function(slNo) {
+            if (await deleteMeeting(slNo)) {
+                loadPreviousMeetings();
+            }
+        };
+
+        function exitEditMode() {
+            currentEditIndex = null;
+            defaultButtons.style.display = 'flex';
+            editModeButtons.style.display = 'none';
+        }
+
+        // ---------- ইভেন্ট লিসেনার ----------
+        document.querySelectorAll('.memberCheck').forEach(cb => {
+            cb.addEventListener('change', updateSelectedList);
+        });
+
+        generateBtn.addEventListener('click', function() {
+            printPreview.style.display = 'flex';
+            prevPanel.style.display = 'none';
+            updateSelectedList();
+            renderPrintPreview();
+            exitEditMode();
+        });
+
+        saveSheetBtn.addEventListener('click', async function() {
+            await saveMeeting('add');
+        });
+
+        viewPrevBtn.addEventListener('click', function() {
+            loadPreviousMeetings();
+            exitEditMode();
+        });
+
+        closePrevBtn.addEventListener('click', function() {
+            prevPanel.style.display = 'none';
+            printPreview.style.display = 'flex';
+        });
+
+        updateBtn.addEventListener('click', async function() {
+            if (currentEditIndex !== null) {
+                if (await saveMeeting('edit', currentEditIndex)) {
+                    exitEditMode();
+                    loadPreviousMeetings();
+                }
+            } else {
+                alert('কোনো এডিট সেশন নেই');
+                exitEditMode();
+            }
+        });
+
+        closeEditBtn.addEventListener('click', function() {
+            exitEditMode();
+            prevPanel.style.display = 'none';
+            printPreview.style.display = 'flex';
+        });
+
+        // PDF/DOC
+        function getExportHTML() {
+            const checks = Array.from(document.querySelectorAll('.memberCheck:checked'));
+            if (!checks.length) return '<p>কোন সদস্য নির্বাচিত নয়</p>';
+            let pages = '';
+            checks.forEach((cb) => { pages += `<div style="page-break-after: always;">${generateLetterPair(cb.value)}</div>`; });
+            return pages;
+        }
+
+        exportDocBtn.addEventListener('click', function() {
+            const content = getExportHTML();
+            if (!content || content.includes('কোন সদস্য')) { 
+                alert('সদস্য নির্বাচন করুন'); 
+                return; 
+            }
+            const style = `<style>body{font-family:'Noto Sans Bengali','Times New Roman',serif;margin:0.5in;}.double-letter{display:flex;}.letter-half{flex:1;padding:10px;font-size:11pt;}.vertical-dotted{flex:0 0 2px;border-left:2px dotted #4a6f8f;}.copy-badge{background:#1b5385;color:white;padding:2px 12px;border-radius:20px;}.dotted-line{border-top:1px dashed #000;}.signature-line{display:flex;justify-content:space-between;}</style>`;
+            const fullHtml = `<html><head><meta charset="UTF-8">${style}</head><body>${content}</body></html>`;
+            const blob = new Blob([fullHtml], { type: 'application/msword' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `pancayat_notice_${new Date().toISOString().slice(0,10)}.doc`;
+            link.click();
+        });
+
+        exportPdfBtn.addEventListener('click', function() {
+            const checks = Array.from(document.querySelectorAll('.memberCheck:checked'));
+            if (!checks.length) { 
+                alert('সদস্য নির্বাচন করুন'); 
+                return; 
+            }
+            const printWindow = window.open('', '_blank', 'width=1100,height=700');
+            if (!printWindow) { 
+                alert('পপ-আপ ব্লকার সক্রিয়'); 
+                return; 
+            }
+            const content = getExportHTML();
+            const style = `<style>body{font-family:'Noto Sans Bengali','Times New Roman',serif;margin:0.4in;} .double-letter{display:flex;}.letter-half{flex:1;padding:10px;font-size:11pt;}.vertical-dotted{flex:0 0 2px;border-left:2px dotted #4a6f8f;} .copy-badge{background:#1b5385;color:white;padding:2px 12px;border-radius:20px;} .dotted-line{border-top:1px dashed #000;} .signature-line{display:flex;justify-content:space-between;} @media print{@page{size:A4 landscape;margin:0.5in;}}</style>`;
+            printWindow.document.write(`<html><head><meta charset="UTF-8">${style}</head><body>${content}</body></html>`);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); }, 300);
+        });
+
+        // লোডে ডিফল্ট চেকবক্স
+        window.addEventListener('load', function() {
+            const chks = document.querySelectorAll('.memberCheck');
+            if (chks.length) {
+                chks[0].checked = true;
+                chks[1].checked = true;
+                chks[3].checked = true;
+            }
+            updateSelectedList();
+        });
+    })();
+</script>
+</body>
+</html>

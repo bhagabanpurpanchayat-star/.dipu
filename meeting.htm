@@ -185,6 +185,54 @@
             outline: 2px solid #ffc107;
             border-color: #08355c;
         }
+        
+        /* Time Picker Styles */
+        .time-picker-container {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .time-select {
+            flex: 1;
+            padding: 0.3rem 0.5rem;
+            border: 1px solid #7f9fc7;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            background: white;
+            cursor: pointer;
+        }
+        .time-select:focus {
+            outline: 2px solid #ffc107;
+            border-color: #08355c;
+        }
+        .time-icon {
+            background: #1b5385;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #598ac2;
+        }
+        .time-icon:hover {
+            background: #2a6a9e;
+        }
+        .time-display {
+            background: #f0f7ff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #08355c;
+            border: 1px dashed #1b5385;
+            min-width: 100px;
+            text-align: center;
+        }
+        
         .inline-duo {
             display: flex;
             gap: 6px;
@@ -557,7 +605,35 @@
             <div class="col-title"><span>📅</span> সভার বিবরণ <span class="required-field">*সবগুলো পূরণ করুন</span></div>
             <div class="field-sm"><label>📆 পত্র ইস্যুর তারিখ <span class="required-field">*</span></label><input type="date" id="issueDate"></div>
             <div class="field-sm"><label>📅 সভার তারিখ <span class="required-field">*</span></label><input type="date" id="meetingDate"></div>
-            <div class="field-sm"><label>⏰ সভার সময় <span class="required-field">*</span></label><input type="text" id="meetingTime" placeholder="যেমন: বিকাল ৪:০০"></div>
+            
+            <!-- Time Picker with Clock -->
+            <div class="field-sm">
+                <label>⏰ সভার সময় <span class="required-field">*</span></label>
+                <div class="time-picker-container">
+                    <select class="time-select" id="meetingHour">
+                        <option value="">ঘন্টা</option>
+                        <option value="০১">০১</option><option value="০২">০২</option><option value="০৩">০৩</option>
+                        <option value="০৪">০৪</option><option value="০৫">০৫</option><option value="০৬">০৬</option>
+                        <option value="০৭">০৭</option><option value="০৮">০৮</option><option value="০৯">০৯</option>
+                        <option value="১০">১০</option><option value="১১">১১</option><option value="১২">১২</option>
+                    </select>
+                    <span>:</span>
+                    <select class="time-select" id="meetingMinute">
+                        <option value="">মিনিট</option>
+                        <option value="০০">০০</option><option value="১৫">১৫</option><option value="৩০">৩০</option>
+                        <option value="৪৫">৪৫</option>
+                    </select>
+                    <select class="time-select" id="meetingAmPm">
+                        <option value="">AM/PM</option>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                    <div class="time-icon" id="setCurrentTimeBtn" title="বর্তমান সময় নিন">🕒</div>
+                </div>
+                <div class="time-display" id="meetingTimeDisplay">--:-- --</div>
+                <input type="hidden" id="meetingTime">
+            </div>
+            
             <div class="field-sm"><label>📌 দিন (স্বয়ংক্রিয়)</label><input type="text" id="dayText" readonly></div>
             <div class="field-sm"><label>🧩 সভার ধরন <span class="required-field">*</span></label>
                 <select id="meetingType">
@@ -693,7 +769,12 @@
         // এলিমেন্ট রেফারেন্স
         const issueDate = document.getElementById('issueDate');
         const meetingDate = document.getElementById('meetingDate');
-        const meetingTime = document.getElementById('meetingTime');
+        const meetingHour = document.getElementById('meetingHour');
+        const meetingMinute = document.getElementById('meetingMinute');
+        const meetingAmPm = document.getElementById('meetingAmPm');
+        const meetingTimeDisplay = document.getElementById('meetingTimeDisplay');
+        const meetingTimeHidden = document.getElementById('meetingTime');
+        const setCurrentTimeBtn = document.getElementById('setCurrentTimeBtn');
         const dayText = document.getElementById('dayText');
         const meetingType = document.getElementById('meetingType');
         const checkboxContainer = document.getElementById('checkboxContainer');
@@ -748,6 +829,53 @@
         issueDate.value = today;
         meetingDate.value = today;
 
+        // Time Picker Functions
+        function updateMeetingTime() {
+            const hour = meetingHour.value;
+            const minute = meetingMinute.value;
+            const ampm = meetingAmPm.value;
+            
+            if (hour && minute && ampm) {
+                const timeString = `${hour}:${minute} ${ampm}`;
+                meetingTimeDisplay.textContent = timeString;
+                meetingTimeHidden.value = timeString;
+            } else {
+                meetingTimeDisplay.textContent = '--:-- --';
+                meetingTimeHidden.value = '';
+            }
+        }
+
+        function setCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            // Convert to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            
+            // Format with leading zeros
+            const hourStr = hours.toString().padStart(2, '0');
+            const minuteStr = Math.round(minutes / 15) * 15; // Round to nearest 15 min
+            const minuteFormatted = minuteStr.toString().padStart(2, '0');
+            
+            meetingHour.value = hourStr;
+            meetingMinute.value = minuteFormatted;
+            meetingAmPm.value = ampm;
+            
+            updateMeetingTime();
+        }
+
+        // Add event listeners for time pickers
+        meetingHour.addEventListener('change', updateMeetingTime);
+        meetingMinute.addEventListener('change', updateMeetingTime);
+        meetingAmPm.addEventListener('change', updateMeetingTime);
+        setCurrentTimeBtn.addEventListener('click', setCurrentTime);
+
+        // Set default time to current time
+        setCurrentTime();
+
         // ---------- Validation Function ----------
         function validateAllFields() {
             // Check issue date
@@ -765,9 +893,9 @@
             }
             
             // Check meeting time
-            if (!meetingTime.value.trim()) {
-                showError('সভার সময় লিখুন');
-                meetingTime.focus();
+            if (!meetingTimeHidden.value) {
+                showError('সভার সময় নির্বাচন করুন');
+                meetingHour.focus();
                 return false;
             }
             
@@ -1132,6 +1260,19 @@
             renumberAgenda();
         }
 
+        function setTimeFromString(timeStr) {
+            if (!timeStr) return;
+            
+            // Parse time string like "০৩:৩০ PM"
+            const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/);
+            if (match) {
+                meetingHour.value = match[1];
+                meetingMinute.value = match[2];
+                meetingAmPm.value = match[3];
+                updateMeetingTime();
+            }
+        }
+
         function formatAgendaWithIcons() {
             const items = getAgendaItems();
             if (!items.length) return '<div class="agenda-item"><span class="agenda-icon">•</span> কোনো এজেন্ডা নেই</div>';
@@ -1154,7 +1295,7 @@
             const typeVal = meetingType.value || '____';
             const mDate = formatDateBangla(meetingDate.value);
             const day = dayText.value.trim() || '____';
-            const time = meetingTime.value.trim() || '____';
+            const time = meetingTimeHidden.value || '____';
             const iDate = formatDateBangla(issueDate.value);
             const agendaHTML = formatAgendaWithIcons();
 
@@ -1226,7 +1367,7 @@
             const newRecord = {
                 slNo: editIndex !== null ? editIndex + 1 : savedMeetings.length + 1,
                 dateOfMeeting: meetingDate.value,
-                meetingTime: meetingTime.value,
+                meetingTime: meetingTimeHidden.value,
                 letterIssueDate: issueDate.value,
                 meetingType: meetingType.value,
                 agenda: agendaList,
@@ -1283,7 +1424,7 @@
             const rec = savedMeetings[index];
             issueDate.value = rec.letterIssueDate;
             meetingDate.value = rec.dateOfMeeting;
-            meetingTime.value = rec.meetingTime;
+            setTimeFromString(rec.meetingTime);
             meetingType.value = rec.meetingType;
             updateDayFromDate();
             setCheckedMembersFromString(rec.recipient);
@@ -1299,7 +1440,7 @@
             const rec = savedMeetings[index];
             issueDate.value = rec.letterIssueDate;
             meetingDate.value = rec.dateOfMeeting;
-            meetingTime.value = rec.meetingTime;
+            setTimeFromString(rec.meetingTime);
             meetingType.value = rec.meetingType;
             updateDayFromDate();
             setCheckedMembersFromString(rec.recipient);
